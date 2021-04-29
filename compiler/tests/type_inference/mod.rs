@@ -18,7 +18,7 @@ use crate::{assert_satisfied, parse_program};
 #[allow(unused)]
 use leo_asg::{new_context, Asg, AsgContext};
 use leo_ast::Ast;
-use leo_compiler::TypeInferenceStage;
+use leo_compiler::TypeInferencePhase;
 use leo_imports::ImportParser;
 use leo_parser::parser;
 
@@ -47,8 +47,8 @@ pub fn parse_program_ast(file_string: &str) -> Ast {
     let asg = Asg::new(thread_leaked_context(), &program, &mut ImportParser::default())
         .expect("Failed to create ASG from AST");
 
-    let new_ast = TypeInferenceStage::default()
-        .stage_ast(&program, &asg.into_repr())
+    let new_ast = TypeInferencePhase::default()
+        .phase_ast(&program, &asg.into_repr())
         .expect("Failed to produce type inference ast.");
 
     new_ast
@@ -83,11 +83,3 @@ fn test_for_loop_and_compound() {
 
     assert_eq!(expected_ast, ast);
 }
-
-// #[test]
-// fn test_big_self_outside_circuit_fail() {
-//     // Check program is invalid.
-//     let program_string = include_str!("big_self_outside_circuit_fail.leo");
-//     let program = parse_program(program_string);
-//     assert!(program.is_err());
-// }
