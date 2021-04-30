@@ -17,7 +17,7 @@
 #[allow(unused)]
 use leo_asg::{new_context, Asg, AsgContext};
 use leo_ast::Ast;
-use leo_compiler::TypeInferenceStage;
+use leo_compiler::TypeInferencePhase;
 use leo_imports::ImportParser;
 use leo_parser::parser;
 
@@ -122,8 +122,8 @@ fn main() -> Result<()> {
     let program = ast.clone().into_repr();
     let asg = Asg::new(thread_leaked_context(), &program, &mut ImportParser::default())?;
 
-    let new_ast = TypeInferenceStage::default()
-        .stage_ast(&program, &asg.into_repr())
+    let new_ast = TypeInferencePhase::default()
+        .phase_ast(&program, &asg.into_repr())
         .expect("Failed to produce type inference ast.");
     if matches.is_present("all") || matches.is_present("type_inference") {
         write_ast(new_ast.clone(), "type_inference.json")?;
