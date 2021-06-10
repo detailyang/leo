@@ -1,6 +1,6 @@
 [package]
 name = "leo-lang"
-version = "1.4.0"
+version = "1.5.1"
 authors = [ "The Aleo Team <hello@aleo.org>" ]
 description = "The Leo programming language"
 homepage = "https://aleo.org"
@@ -44,49 +44,49 @@ members = [
 
 [dependencies.leo-ast]
 path = "./ast"
-version = "1.4.0"
+version = "1.5.1"
 
 [dependencies.leo-compiler]
 path = "./compiler"
-version = "1.4.0"
+version = "1.5.1"
 
 [dependencies.leo-imports]
 path = "./imports"
-version = "1.4.0"
+version = "1.5.1"
 
 [dependencies.leo-input]
 path = "./input"
-version = "1.4.0"
+version = "1.5.1"
 
 [dependencies.leo-package]
 path = "./package"
-version = "1.4.0"
+version = "1.5.1"
 
 [dependencies.leo-state]
 path = "./state"
-version = "1.4.0"
+version = "1.5.1"
 
 [dependencies.leo-synthesizer]
 path = "./synthesizer"
-version = "1.4.0"
+version = "1.5.1"
 
 [dependencies.snarkvm-algorithms]
-version = "0.2.2"
+version = "0.5.4"
 
 [dependencies.snarkvm-curves]
-version = "0.2.2"
+version = "0.5.4"
 default-features = false
 
 [dependencies.snarkvm-gadgets]
-version = "0.2.2"
+version = "0.5.4"
 default-features = false
 
 [dependencies.snarkvm-r1cs]
-version = "0.2.2"
+version = "0.5.4"
 default-features = false
 
 [dependencies.snarkvm-utilities]
-version = "0.2.2"
+version = "0.5.4"
 
 [dependencies.anyhow]
 version = "1.0"
@@ -113,7 +113,7 @@ version = "0.3.1"
 version = "1.4.0"
 
 [dependencies.notify]
-version = "4.0.16"
+version = "4.0.17"
 
 [dependencies.rand]
 version = "0.8"
@@ -126,7 +126,7 @@ version = "0.11.3"
 features = [ "blocking", "json", "multipart" ]
 
 [dependencies.self_update]
-version = "0.26.0"
+version = "0.27.0"
 features = [ "archive-zip" ]
 
 [dependencies.serde]
@@ -159,7 +159,7 @@ version = "0.12.1"
 version = "0.11.2"
 
 [dev-dependencies.assert_cmd]
-version = "1.0.3"
+version = "1.0.5"
 
 [dev-dependencies.test_dir]
 version = "0.1.0"

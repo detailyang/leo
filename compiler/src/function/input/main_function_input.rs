@@ -22,10 +22,12 @@ use crate::{
     program::ConstrainedProgram,
     value::{
         boolean::input::bool_from_input,
+        char::char_from_input,
         field::input::field_from_input,
         group::input::group_from_input,
         ConstrainedValue,
     },
+    Char,
     FieldType,
     GroupType,
     Integer,
@@ -34,7 +36,7 @@ use leo_asg::{ConstInt, Type};
 use leo_ast::{InputValue, Span};
 
 use snarkvm_fields::PrimeField;
-use snarkvm_gadgets::traits::utilities::boolean::Boolean;
+use snarkvm_gadgets::boolean::Boolean;
 use snarkvm_r1cs::ConstraintSystem;
 
 impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
@@ -49,6 +51,7 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
         match type_ {
             Type::Address => Ok(Address::from_input(cs, name, input_option, span)?),
             Type::Boolean => Ok(bool_from_input(cs, name, input_option, span)?),
+            Type::Char => Ok(char_from_input(cs, name, input_option, span)?),
             Type::Field => Ok(field_from_input(cs, name, input_option, span)?),
             Type::Group => Ok(group_from_input(cs, name, input_option, span)?),
             Type::Integer(integer_type) => Ok(ConstrainedValue::Integer(Integer::from_input(
@@ -69,7 +72,7 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
 impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
     pub fn constant_main_function_input<CS: ConstraintSystem<F>>(
         &mut self,
-        _cs: &mut CS,
+        cs: &mut CS,
         type_: &Type,
         name: &str,
         input_option: Option<InputValue>,
@@ -80,7 +83,15 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
         match (type_, input) {
             (Type::Address, InputValue::Address(addr)) => Ok(ConstrainedValue::Address(Address::constant(addr, span)?)),
             (Type::Boolean, InputValue::Boolean(value)) => Ok(ConstrainedValue::Boolean(Boolean::constant(value))),
-            (Type::Field, InputValue::Field(value)) => Ok(ConstrainedValue::Field(FieldType::constant(value, span)?)),
+            (Type::Char, InputValue::Char(character)) => Ok(ConstrainedValue::Char(Char::constant(
+                cs,
+                character,
+                format!("{}", character as u32),
+                span,
+            )?)),
+            (Type::Field, InputValue::Field(value)) => {
+                Ok(ConstrainedValue::Field(FieldType::constant(cs, value, span)?))
+            }
             (Type::Group, InputValue::Group(value)) => Ok(ConstrainedValue::Group(G::constant(&value.into(), span)?)),
             (Type::Integer(integer_type), InputValue::Integer(_, value)) => Ok(ConstrainedValue::Integer(
                 Integer::new(&ConstInt::parse(integer_type, &value, span)?),
@@ -97,7 +108,7 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
                 Ok(ConstrainedValue::Array(
                     values
                         .iter()
-                        .map(|x| self.constant_main_function_input(_cs, type_, name, Some(x.clone()), span))
+                        .map(|x| self.constant_main_function_input(cs, type_, name, Some(x.clone()), span))
                         .collect::<Result<Vec<_>, _>>()?,
                 ))
             }
@@ -109,7 +120,10 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
                 Ok(ConstrainedValue::Tuple(
                     values
                         .iter()
-                        .map(|x| self.constant_main_function_input(_cs, type_, name, Some(x.clone()), span))
+                        .enumerate()
+                        .map(|(i, x)| {
+                            self.constant_main_function_input(cs, types.get(i).unwrap(), name, Some(x.clone()), span)
+                        })
                         .collect::<Result<Vec<_>, _>>()?,
                 ))
             }

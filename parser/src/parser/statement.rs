@@ -226,16 +226,19 @@ impl ParserContext {
     ///
     pub fn parse_formatted_string(&mut self) -> SyntaxResult<FormatString> {
         let start_span;
-        let parts = match self.expect_any()? {
+        let string = match self.expect_any()? {
             SpannedToken {
-                token: Token::FormatString(parts),
+                token: Token::StringLit(chars),
                 span,
             } => {
                 start_span = span;
-                parts
+                chars
             }
             SpannedToken { token, span } => return Err(SyntaxError::unexpected_str(&token, "formatted string", &span)),
         };
+
+        let parts = FormatStringPart::from_string(string);
+
         let mut parameters = Vec::new();
         while self.eat(Token::Comma).is_some() {
             let param = self.parse_expression()?;
@@ -243,13 +246,7 @@ impl ParserContext {
         }
 
         Ok(FormatString {
-            parts: parts
-                .into_iter()
-                .map(|x| match x {
-                    crate::FormatStringPart::Const(value) => FormatStringPart::Const(value),
-                    crate::FormatStringPart::Container => FormatStringPart::Container,
-                })
-                .collect(),
+            parts,
             span: &start_span + parameters.last().map(|x| x.span()).unwrap_or(&start_span),
             parameters,
         })
@@ -314,8 +311,10 @@ impl ParserContext {
     pub fn parse_definition_statement(&mut self) -> SyntaxResult<DefinitionStatement> {
         let declare = self.expect_oneof(&[Token::Let, Token::Const])?;
         let mut variable_names = Vec::new();
-        if self.eat(Token::LeftParen).is_some() {
-            variable_names.push(self.parse_variable_name(&declare)?);
+
+        let next = self.eat(Token::LeftParen);
+        variable_names.push(self.parse_variable_name(&declare)?);
+        if next.is_some() {
             let mut eaten_ending = false;
             while self.eat(Token::Comma).is_some() {
                 if self.eat(Token::RightParen).is_some() {
@@ -327,8 +326,6 @@ impl ParserContext {
             if !eaten_ending {
                 self.expect(Token::RightParen)?;
             }
-        } else {
-            variable_names.push(self.parse_variable_name(&declare)?);
         }
 
         let type_ = if self.eat(Token::Colon).is_some() {

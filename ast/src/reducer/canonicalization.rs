@@ -347,7 +347,7 @@ impl Canonicalizer {
                 Statement::Assign(AssignStatement {
                     assignee,
                     value,
-                    operation: assign.operation.clone(),
+                    operation: assign.operation,
                     span: assign.span.clone(),
                 })
             }
@@ -483,6 +483,20 @@ impl ReconstructingReducer for Canonicalizer {
             }
             _ => Ok(new.clone()),
         }
+    }
+
+    fn reduce_string(&mut self, string: &str, span: &Span) -> Result<Expression, ReducerError> {
+        let mut elements = Vec::new();
+        for character in string.chars() {
+            elements.push(SpreadOrExpression::Expression(Expression::Value(
+                ValueExpression::Char(character, span.clone()),
+            )));
+        }
+
+        Ok(Expression::ArrayInline(ArrayInlineExpression {
+            elements,
+            span: span.clone(),
+        }))
     }
 
     fn reduce_array_init(

@@ -1,6 +1,6 @@
 [package]
 name = "leo-abnf"
-version = "1.4.0"
+version = "1.5.1"
 authors = [ "The Aleo Team <hello@aleo.org>" ]
 description = "ABNF to Markdown converter for the Leo programming language"
 homepage = "https://aleo.org"
@@ -17,6 +17,5 @@ include = [ "Cargo.toml", "src", "README.md", "LICENSE.md" ]
 license = "GPL-3.0"
 edition = "2018"
 
-[dependencies]
-abnf = "0.11.3"
-anyhow = "1.0"
+[dependencies.anyhow]
+version = "1.0"

@@ -172,6 +172,16 @@ impl AsgConvertError {
         )
     }
 
+    pub fn invalid_const_assign(name: &str, span: &Span) -> Self {
+        Self::new_from_span(
+            format!(
+                "failed to create const variable(s) '{}' with non constant values.",
+                name
+            ),
+            span,
+        )
+    }
+
     pub fn duplicate_function_definition(name: &str, span: &Span) -> Self {
         Self::new_from_span(
             format!("a function named \"{}\" already exists in this scope", name),
@@ -235,6 +245,10 @@ impl AsgConvertError {
 
     pub fn invalid_boolean(value: &str, span: &Span) -> Self {
         Self::new_from_span(format!("failed to parse boolean value '{}'", value), span)
+    }
+
+    pub fn invalid_char(value: &str, span: &Span) -> Self {
+        Self::new_from_span(format!("failed to parse char value '{}'", value), span)
     }
 
     pub fn invalid_int(value: &str, span: &Span) -> Self {

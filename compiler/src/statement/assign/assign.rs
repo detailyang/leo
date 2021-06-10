@@ -20,7 +20,7 @@ use crate::{arithmetic::*, errors::StatementError, program::ConstrainedProgram, 
 use leo_asg::{AssignOperation, AssignStatement, Span};
 
 use snarkvm_fields::PrimeField;
-use snarkvm_gadgets::traits::utilities::{boolean::Boolean, select::CondSelectGadget};
+use snarkvm_gadgets::{boolean::Boolean, traits::select::CondSelectGadget};
 use snarkvm_r1cs::ConstraintSystem;
 
 impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
@@ -33,54 +33,13 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
     ) -> Result<(), StatementError> {
         // Get the name of the variable we are assigning to
         let new_value = self.enforce_expression(cs, statement.value.get())?;
-        let mut resolved_assignee = self.resolve_assign(cs, statement)?;
 
-        if resolved_assignee.len() == 1 {
-            let span = statement.span.clone().unwrap_or_default();
-
-            Self::enforce_assign_operation(
-                cs,
-                indicator,
-                format!("select {} {}:{}", new_value, &span.line_start, &span.col_start),
-                &statement.operation,
-                resolved_assignee[0],
-                new_value,
-                &span,
-            )?;
-        } else {
-            match new_value {
-                ConstrainedValue::Array(new_values) => {
-                    let span = statement.span.clone().unwrap_or_default();
-
-                    for (i, (old_ref, new_value)) in
-                        resolved_assignee.into_iter().zip(new_values.into_iter()).enumerate()
-                    {
-                        Self::enforce_assign_operation(
-                            cs,
-                            indicator,
-                            format!(
-                                "select-splice {} {} {}:{}",
-                                i, new_value, &span.line_start, &span.col_start
-                            ),
-                            &statement.operation,
-                            old_ref,
-                            new_value,
-                            &span,
-                        )?;
-                    }
-                }
-                _ => {
-                    return Err(StatementError::array_assign_range(
-                        &statement.span.clone().unwrap_or_default(),
-                    ));
-                }
-            };
-        }
+        self.resolve_assign(cs, statement, new_value, indicator)?;
 
         Ok(())
     }
 
-    fn enforce_assign_operation<CS: ConstraintSystem<F>>(
+    pub(super) fn enforce_assign_operation<CS: ConstraintSystem<F>>(
         cs: &mut CS,
         condition: &Boolean,
         scope: String,

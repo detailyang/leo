@@ -20,7 +20,7 @@ use crate::{enforce_and, errors::ExpressionError, value::ConstrainedValue, Group
 use leo_asg::Span;
 
 use snarkvm_fields::PrimeField;
-use snarkvm_gadgets::traits::utilities::{boolean::Boolean, eq::EvaluateEqGadget};
+use snarkvm_gadgets::{boolean::Boolean, eq::EvaluateEqGadget};
 use snarkvm_r1cs::ConstraintSystem;
 
 pub fn evaluate_eq<'a, F: PrimeField, G: GroupType<F>, CS: ConstraintSystem<F>>(
@@ -38,6 +38,10 @@ pub fn evaluate_eq<'a, F: PrimeField, G: GroupType<F>, CS: ConstraintSystem<F>>(
         (ConstrainedValue::Boolean(bool_1), ConstrainedValue::Boolean(bool_2)) => {
             let unique_namespace = cs.ns(|| namespace_string);
             bool_1.evaluate_equal(unique_namespace, &bool_2)
+        }
+        (ConstrainedValue::Char(char_1), ConstrainedValue::Char(char_2)) => {
+            let unique_namespace = cs.ns(|| namespace_string);
+            char_1.evaluate_equal(unique_namespace, &char_2)
         }
         (ConstrainedValue::Integer(num_1), ConstrainedValue::Integer(num_2)) => {
             let unique_namespace = cs.ns(|| namespace_string);
