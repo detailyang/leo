@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with the Leo library. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{ArrayDimensions, GroupValue};
+use crate::{ArrayDimensions, Char, CharValue, GroupValue, Span as AstSpan};
 use leo_input::{
     errors::InputParserError,
     expressions::{ArrayInitializerExpression, ArrayInlineExpression, Expression, StringExpression, TupleExpression},
@@ -23,9 +23,10 @@ use leo_input::{
         Address,
         AddressValue,
         BooleanValue,
-        CharValue,
+        CharValue as InputCharValue,
         FieldValue,
         GroupValue as InputGroupValue,
+        IntegerValue,
         NumberValue,
         Value,
     },
@@ -38,7 +39,7 @@ use std::fmt;
 pub enum InputValue {
     Address(String),
     Boolean(bool),
-    Char(char),
+    Char(CharValue),
     Field(String),
     Group(GroupValue),
     Integer(IntegerType, String),
@@ -63,9 +64,14 @@ impl InputValue {
         Ok(InputValue::Boolean(boolean))
     }
 
-    fn from_char(character: CharValue) -> Result<Self, InputParserError> {
-        let character = character.value.inner()?;
-        Ok(InputValue::Char(character))
+    fn from_char(input_character: InputCharValue) -> Result<Self, InputParserError> {
+        let character = match input_character.value.inner()? {
+            leo_input::values::Char::Scalar(scalar) => Char::Scalar(scalar),
+            leo_input::values::Char::NonScalar(non_scalar) => Char::NonScalar(non_scalar),
+        };
+
+        let span = AstSpan::from(input_character.span);
+        Ok(InputValue::Char(CharValue { character, span }))
     }
 
     fn from_number(integer_type: IntegerType, number: String) -> Self {
@@ -97,6 +103,32 @@ impl InputValue {
             (DataType::Boolean(_), Value::Boolean(boolean)) => InputValue::from_boolean(boolean),
             (DataType::Char(_), Value::Char(character)) => InputValue::from_char(character),
             (DataType::Integer(integer_type), Value::Integer(integer)) => {
+                match integer.clone() {
+                    IntegerValue::Signed(signed) => {
+                        if let IntegerType::Signed(inner) = integer_type.clone() {
+                            let singed_type = signed.clone().type_;
+                            if std::mem::discriminant(&inner) != std::mem::discriminant(&singed_type) {
+                                return Err(InputParserError::integer_type_mismatch(
+                                    integer_type,
+                                    IntegerType::Signed(singed_type),
+                                    integer.span(),
+                                ));
+                            }
+                        }
+                    }
+                    IntegerValue::Unsigned(unsigned) => {
+                        if let IntegerType::Unsigned(inner) = integer_type.clone() {
+                            let unsinged_type = unsigned.clone().type_;
+                            if std::mem::discriminant(&inner) != std::mem::discriminant(&unsinged_type) {
+                                return Err(InputParserError::integer_type_mismatch(
+                                    integer_type,
+                                    IntegerType::Unsigned(unsinged_type),
+                                    integer.span(),
+                                ));
+                            }
+                        }
+                    }
+                }
                 Ok(InputValue::from_number(integer_type, integer.to_string()))
             }
             (DataType::Group(_), Value::Group(group)) => Ok(InputValue::from_group(group)),
@@ -157,7 +189,7 @@ impl InputValue {
         for character in string.chars.into_iter() {
             let element = InputValue::from_expression(
                 inner_array_type.clone(),
-                Expression::Value(Value::Char(CharValue {
+                Expression::Value(Value::Char(InputCharValue {
                     value: character.clone(),
                     span: character.span().clone(),
                 })),

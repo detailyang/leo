@@ -238,7 +238,7 @@ impl Canonicalizer {
 
             Expression::CircuitInit(circuit_init) => {
                 let mut name = circuit_init.name.clone();
-                if name.name.as_ref() == "Self" {
+                if name.name.as_ref() == "Self" && self.circuit_name.is_some() {
                     name = self.circuit_name.as_ref().unwrap().clone();
                 }
 
@@ -485,11 +485,48 @@ impl ReconstructingReducer for Canonicalizer {
         }
     }
 
-    fn reduce_string(&mut self, string: &str, span: &Span) -> Result<Expression, ReducerError> {
+    fn reduce_string(&mut self, string: &[Char], span: &Span) -> Result<Expression, ReducerError> {
         let mut elements = Vec::new();
-        for character in string.chars() {
+        let mut col_adder = 0;
+        for (index, character) in string.iter().enumerate() {
+            let col_start = span.col_start + index + 1 + col_adder; // account for open quote
+            let bytes = span.content.clone().into_bytes();
+            let col_stop: usize;
+
+            if bytes[col_start - 1] == b'\\' {
+                let mut width = 0;
+
+                match bytes[col_start] {
+                    b'x' => width += 3,
+                    b'u' => {
+                        width += 1;
+                        let mut index = 1;
+                        while bytes[col_start + index] != b'}' {
+                            width += 1;
+                            index += 1;
+                        }
+                        width += 1;
+                    }
+                    _ => width += 1,
+                }
+                col_adder += width;
+                col_stop = col_start + 1 + width;
+            } else {
+                col_stop = col_start + 1;
+            }
+
             elements.push(SpreadOrExpression::Expression(Expression::Value(
-                ValueExpression::Char(character, span.clone()),
+                ValueExpression::Char(CharValue {
+                    character: character.clone(),
+                    span: Span {
+                        line_start: span.line_start,
+                        line_stop: span.line_stop,
+                        col_start,
+                        col_stop,
+                        path: span.path.clone(),
+                        content: span.content.clone(),
+                    },
+                }),
             )));
         }
 
@@ -556,13 +593,13 @@ impl ReconstructingReducer for Canonicalizer {
         value: Expression,
     ) -> Result<AssignStatement, ReducerError> {
         match value {
-            Expression::Binary(binary_expr) if assign.operation != AssignOperation::Assign => {
+            value if assign.operation != AssignOperation::Assign => {
                 let left = self.canonicalize_accesses(
                     Expression::Identifier(assignee.identifier.clone()),
                     &assignee.accesses,
                     &assign.span,
                 )?;
-                let right = Box::new(Expression::Binary(binary_expr));
+                let right = Box::new(value);
                 let op = self.compound_operation_converstion(&assign.operation)?;
 
                 let new_value = Expression::Binary(BinaryExpression {
@@ -579,30 +616,12 @@ impl ReconstructingReducer for Canonicalizer {
                     span: assign.span.clone(),
                 })
             }
-            Expression::Value(value_expr) if assign.operation != AssignOperation::Assign => {
-                let left = self.canonicalize_accesses(
-                    Expression::Identifier(assignee.identifier.clone()),
-                    &assignee.accesses,
-                    &assign.span,
-                )?;
-                let right = Box::new(Expression::Value(value_expr));
-                let op = self.compound_operation_converstion(&assign.operation)?;
-
-                let new_value = Expression::Binary(BinaryExpression {
-                    left,
-                    right,
-                    op,
-                    span: assign.span.clone(),
-                });
-
-                Ok(AssignStatement {
-                    operation: AssignOperation::Assign,
-                    assignee,
-                    value: new_value,
-                    span: assign.span.clone(),
-                })
-            }
-            _ => Ok(assign.clone()),
+            value => Ok(AssignStatement {
+                operation: AssignOperation::Assign,
+                assignee,
+                value,
+                span: assign.span.clone(),
+            }),
         }
     }
 
