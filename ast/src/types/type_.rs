@@ -154,8 +154,8 @@ impl fmt::Display for Type {
             Type::Field => write!(f, "field"),
             Type::Group => write!(f, "group"),
             Type::IntegerType(ref integer_type) => write!(f, "{}", integer_type),
-            Type::Circuit(ref variable) => write!(f, "circuit {}", variable),
-            Type::SelfType => write!(f, "SelfType"),
+            Type::Circuit(ref variable) => write!(f, "{}", variable),
+            Type::SelfType => write!(f, "Self"),
             Type::Array(ref array, ref dimensions) => write!(f, "[{}; {}]", *array, dimensions),
             Type::Tuple(ref tuple) => {
                 let types = tuple.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(", ");
