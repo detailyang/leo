@@ -16,11 +16,11 @@
 
 //! Enforces a relational `==` operator in a resolved Leo program.
 
-use crate::{enforce_and, errors::ExpressionError, value::ConstrainedValue, GroupType};
-use leo_asg::Span;
+use crate::{enforce_and, value::ConstrainedValue, GroupType};
+use leo_errors::{CompilerError, Result, Span};
 
 use snarkvm_fields::PrimeField;
-use snarkvm_gadgets::{boolean::Boolean, eq::EvaluateEqGadget};
+use snarkvm_gadgets::{boolean::Boolean, traits::eq::EvaluateEqGadget};
 use snarkvm_r1cs::ConstraintSystem;
 
 pub fn evaluate_eq<'a, F: PrimeField, G: GroupType<F>, CS: ConstraintSystem<F>>(
@@ -28,7 +28,7 @@ pub fn evaluate_eq<'a, F: PrimeField, G: GroupType<F>, CS: ConstraintSystem<F>>(
     left: ConstrainedValue<'a, F, G>,
     right: ConstrainedValue<'a, F, G>,
     span: &Span,
-) -> Result<ConstrainedValue<'a, F, G>, ExpressionError> {
+) -> Result<ConstrainedValue<'a, F, G>> {
     let namespace_string = format!("evaluate {} == {} {}:{}", left, right, span.line_start, span.col_start);
     let constraint_result = match (left, right) {
         (ConstrainedValue::Address(address_1), ConstrainedValue::Address(address_2)) => {
@@ -57,6 +57,11 @@ pub fn evaluate_eq<'a, F: PrimeField, G: GroupType<F>, CS: ConstraintSystem<F>>(
         }
         (ConstrainedValue::Array(arr_1), ConstrainedValue::Array(arr_2)) => {
             let mut current = ConstrainedValue::Boolean(Boolean::constant(true));
+
+            if arr_1.len() != arr_2.len() {
+                return Err(CompilerError::array_sizes_must_match_in_eq(arr_1.len(), arr_2.len(), span).into());
+            }
+
             for (i, (left, right)) in arr_1.into_iter().zip(arr_2.into_iter()).enumerate() {
                 let next = evaluate_eq(&mut cs.ns(|| format!("array[{}]", i)), left, right, span)?;
 
@@ -75,14 +80,11 @@ pub fn evaluate_eq<'a, F: PrimeField, G: GroupType<F>, CS: ConstraintSystem<F>>(
             return Ok(current);
         }
         (val_1, val_2) => {
-            return Err(ExpressionError::incompatible_types(
-                format!("{} == {}", val_1, val_2,),
-                span,
-            ));
+            return Err(CompilerError::incompatible_types(format!("{} == {}", val_1, val_2,), span).into());
         }
     };
 
-    let boolean = constraint_result.map_err(|_| ExpressionError::cannot_evaluate("==".to_string(), span))?;
+    let boolean = constraint_result.map_err(|_| CompilerError::cannot_evaluate_expression("==", span))?;
 
     Ok(ConstrainedValue::Boolean(boolean))
 }

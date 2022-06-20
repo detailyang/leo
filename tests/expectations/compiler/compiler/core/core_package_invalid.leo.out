@@ -1,5 +1,0 @@
----
-namespace: Compile
-expectation: Fail
-outputs:
-  - "    --> :0:0\n     |\n     |\n     |\n     = failed to resolve import: 'core'"

@@ -48,6 +48,7 @@ impl<'a, T: Monoid, R: MonoidalReducerExpression<'a, T>> MonoidalDirector<'a, T,
             Expression::CircuitInit(e) => self.reduce_circuit_init(e),
             Expression::Ternary(e) => self.reduce_ternary_expression(e),
             Expression::Cast(e) => self.reduce_cast_expression(e),
+            Expression::LengthOf(e) => self.reduce_lengthof_expression(e),
             Expression::Constant(e) => self.reduce_constant(e),
             Expression::TupleAccess(e) => self.reduce_tuple_access(e),
             Expression::TupleInit(e) => self.reduce_tuple_init(e),
@@ -138,6 +139,12 @@ impl<'a, T: Monoid, R: MonoidalReducerExpression<'a, T>> MonoidalDirector<'a, T,
         self.reducer.reduce_cast_expression(input, inner)
     }
 
+    pub fn reduce_lengthof_expression(&mut self, input: &LengthOfExpression<'a>) -> T {
+        let inner = self.reduce_expression(input.inner.get());
+
+        self.reducer.reduce_lengthof_expression(input, inner)
+    }
+
     pub fn reduce_constant(&mut self, input: &Constant<'a>) -> T {
         self.reducer.reduce_constant(input)
     }
@@ -225,7 +232,7 @@ impl<'a, T: Monoid, R: MonoidalReducerStatement<'a, T>> MonoidalDirector<'a, T, 
             .reduce_conditional_statement(input, condition, if_true, if_false)
     }
 
-    pub fn reduce_formatted_string(&mut self, input: &FormatString<'a>) -> T {
+    pub fn reduce_formatted_string(&mut self, input: &ConsoleArgs<'a>) -> T {
         let parameters = input
             .parameters
             .iter()
@@ -238,9 +245,7 @@ impl<'a, T: Monoid, R: MonoidalReducerStatement<'a, T>> MonoidalDirector<'a, T, 
     pub fn reduce_console(&mut self, input: &ConsoleStatement<'a>) -> T {
         let argument = match &input.function {
             ConsoleFunction::Assert(e) => self.reduce_expression(e.get()),
-            ConsoleFunction::Debug(f) | ConsoleFunction::Error(f) | ConsoleFunction::Log(f) => {
-                self.reduce_formatted_string(f)
-            }
+            ConsoleFunction::Error(f) | ConsoleFunction::Log(f) => self.reduce_formatted_string(f),
         };
 
         self.reducer.reduce_console(input, argument)
@@ -310,6 +315,6 @@ impl<'a, T: Monoid, R: MonoidalReducerProgram<'a, T>> MonoidalDirector<'a, T, R>
         let circuits = input.circuits.iter().map(|(_, c)| self.reduce_circuit(c)).collect();
 
         self.reducer
-            .reduce_program(&input, imported_modules, functions, circuits)
+            .reduce_program(input, imported_modules, functions, circuits)
     }
 }

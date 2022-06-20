@@ -14,21 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with the Leo library. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{ArrayDimensions, Char, CharValue, GroupValue, Span as AstSpan};
+use crate::{ArrayDimensions, Char, CharValue, GroupValue};
+use leo_errors::Span as AstSpan;
 use leo_input::{
     errors::InputParserError,
     expressions::{ArrayInitializerExpression, ArrayInlineExpression, Expression, StringExpression, TupleExpression},
     types::{ArrayType, CharType, DataType, IntegerType, TupleType, Type},
     values::{
-        Address,
-        AddressValue,
-        BooleanValue,
-        CharValue as InputCharValue,
-        FieldValue,
-        GroupValue as InputGroupValue,
-        IntegerValue,
-        NumberValue,
-        Value,
+        Address, AddressValue, BooleanValue, CharValue as InputCharValue, FieldValue, GroupValue as InputGroupValue,
+        IntegerValue, NumberValue, Value,
     },
 };
 use pest::Span;

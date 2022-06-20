@@ -47,6 +47,8 @@ pub trait Runner {
 }
 
 pub fn run_tests<T: Runner>(runner: &T, expectation_category: &str) {
+    std::env::remove_var("LEO_BACKTRACE"); // always remove backtrace so it doesn't clog output files
+    std::env::set_var("LEO_TESTFRAMEWORK", "true");
     let mut pass_categories = 0;
     let mut pass_tests = 0;
     let mut fail_tests = 0;
@@ -174,11 +176,14 @@ pub fn run_tests<T: Runner>(runner: &T, expectation_category: &str) {
 
         if errors.is_empty() {
             if expectations.is_none() {
-                outputs.push((expectation_path, TestExpectation {
-                    namespace: config.namespace,
-                    expectation: config.expectation,
-                    outputs: new_outputs,
-                }));
+                outputs.push((
+                    expectation_path,
+                    TestExpectation {
+                        namespace: config.namespace,
+                        expectation: config.expectation,
+                        outputs: new_outputs,
+                    },
+                ));
             }
             pass_categories += 1;
         } else {
@@ -223,4 +228,6 @@ pub fn run_tests<T: Runner>(runner: &T, expectation_category: &str) {
             pass_categories
         );
     }
+
+    std::env::remove_var("LEO_TESTFRAMEWORK");
 }

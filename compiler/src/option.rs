@@ -17,9 +17,8 @@
 ///
 /// Toggles compiler optimizations on the program.
 ///
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CompilerOptions {
-    pub canonicalization_enabled: bool,
     pub constant_folding_enabled: bool,
     pub dead_code_elimination_enabled: bool,
 }
@@ -30,26 +29,17 @@ impl Default for CompilerOptions {
     ///
     fn default() -> Self {
         CompilerOptions {
-            canonicalization_enabled: true,
             constant_folding_enabled: true,
             dead_code_elimination_enabled: true,
         }
     }
 }
 
-#[derive(Clone)]
-pub struct TheoremOptions {
+#[derive(Clone, Default)]
+pub struct AstSnapshotOptions {
+    pub spans_enabled: bool,
     pub initial: bool,
+    pub imports_resolved: bool,
     pub canonicalized: bool,
     pub type_inferenced: bool,
-}
-
-impl Default for TheoremOptions {
-    fn default() -> Self {
-        Self {
-            initial: false,
-            canonicalized: false,
-            type_inferenced: false,
-        }
-    }
 }

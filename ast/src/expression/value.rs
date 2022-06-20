@@ -17,23 +17,35 @@
 use tendril::StrTendril;
 
 use super::*;
-use crate::{Char, CharValue, GroupTuple};
+use crate::{Char, CharValue};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ValueExpression {
     // todo: deserialize values here
-    Address(#[serde(with = "crate::common::tendril_json")] StrTendril, Span),
-    Boolean(#[serde(with = "crate::common::tendril_json")] StrTendril, Span),
+    Address(
+        #[serde(with = "leo_errors::common::tendril_json")] StrTendril,
+        #[serde(with = "leo_errors::common::span_json")] Span,
+    ),
+    Boolean(
+        #[serde(with = "leo_errors::common::tendril_json")] StrTendril,
+        #[serde(with = "leo_errors::common::span_json")] Span,
+    ),
     Char(CharValue),
-    Field(#[serde(with = "crate::common::tendril_json")] StrTendril, Span),
+    Field(
+        #[serde(with = "leo_errors::common::tendril_json")] StrTendril,
+        #[serde(with = "leo_errors::common::span_json")] Span,
+    ),
     Group(Box<GroupValue>),
-    Implicit(#[serde(with = "crate::common::tendril_json")] StrTendril, Span),
+    Implicit(
+        #[serde(with = "leo_errors::common::tendril_json")] StrTendril,
+        #[serde(with = "leo_errors::common::span_json")] Span,
+    ),
     Integer(
         IntegerType,
-        #[serde(with = "crate::common::tendril_json")] StrTendril,
-        Span,
+        #[serde(with = "leo_errors::common::tendril_json")] StrTendril,
+        #[serde(with = "leo_errors::common::span_json")] Span,
     ),
-    String(Vec<Char>, Span),
+    String(Vec<Char>, #[serde(with = "leo_errors::common::span_json")] Span),
 }
 
 impl fmt::Display for ValueExpression {
@@ -45,7 +57,7 @@ impl fmt::Display for ValueExpression {
             Char(character) => write!(f, "{}", character),
             Field(field, _) => write!(f, "{}", field),
             Implicit(implicit, _) => write!(f, "{}", implicit),
-            Integer(value, type_, _) => write!(f, "{}{}", value, type_),
+            Integer(type_, value, _) => write!(f, "{}{}", value, type_),
             Group(group) => write!(f, "{}", group),
             String(string, _) => {
                 for character in string.iter() {
@@ -69,7 +81,8 @@ impl Node for ValueExpression {
             | String(_, span) => span,
             Char(character) => &character.span,
             Group(group) => match &**group {
-                GroupValue::Single(_, span) | GroupValue::Tuple(GroupTuple { span, .. }) => span,
+                GroupValue::Single(_, span) => span,
+                GroupValue::Tuple(tuple) => &tuple.span,
             },
         }
     }
@@ -85,7 +98,8 @@ impl Node for ValueExpression {
             | String(_, span) => *span = new_span,
             Char(character) => character.span = new_span,
             Group(group) => match &mut **group {
-                GroupValue::Single(_, span) | GroupValue::Tuple(GroupTuple { span, .. }) => *span = new_span,
+                GroupValue::Single(_, span) => *span = new_span,
+                GroupValue::Tuple(tuple) => tuple.span = new_span,
             },
         }
     }

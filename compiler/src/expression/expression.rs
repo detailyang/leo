@@ -18,16 +18,15 @@
 
 use crate::{
     arithmetic::*,
-    errors::ExpressionError,
     logical::*,
     program::ConstrainedProgram,
     relational::*,
     resolve_core_circuit,
-    value::{Address, Char, CharType, ConstrainedValue, Integer},
-    FieldType,
-    GroupType,
+    value::{Address, Char, CharType, ConstrainedCircuitMember, ConstrainedValue, Integer},
+    FieldType, GroupType,
 };
-use leo_asg::{expression::*, ConstValue, Expression, Node, Span};
+use leo_asg::{expression::*, ConstValue, Expression, Node};
+use leo_errors::{Result, Span};
 
 use snarkvm_fields::PrimeField;
 use snarkvm_gadgets::boolean::Boolean;
@@ -37,9 +36,9 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
     pub(crate) fn enforce_const_value<CS: ConstraintSystem<F>>(
         &mut self,
         cs: &mut CS,
-        value: &ConstValue,
+        value: &'a ConstValue<'a>,
         span: &Span,
-    ) -> Result<ConstrainedValue<'a, F, G>, ExpressionError> {
+    ) -> Result<ConstrainedValue<'a, F, G>> {
         Ok(match value {
             ConstValue::Address(value) => ConstrainedValue::Address(Address::constant(value.to_string(), span)?),
             ConstValue::Boolean(value) => ConstrainedValue::Boolean(Boolean::Constant(*value)),
@@ -75,6 +74,17 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
                     .map(|x| self.enforce_const_value(cs, x, span))
                     .collect::<Result<Vec<_>, _>>()?,
             ),
+            ConstValue::Circuit(circuit, members) => {
+                let mut constrained_members = Vec::new();
+                for (_, (identifier, member)) in members.iter() {
+                    constrained_members.push(ConstrainedCircuitMember(
+                        identifier.clone(),
+                        self.enforce_const_value(cs, member, span)?,
+                    ));
+                }
+
+                ConstrainedValue::CircuitExpression(circuit, constrained_members)
+            }
         })
     }
 
@@ -82,11 +92,14 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
         &mut self,
         cs: &mut CS,
         expression: &'a Expression<'a>,
-    ) -> Result<ConstrainedValue<'a, F, G>, ExpressionError> {
+    ) -> Result<ConstrainedValue<'a, F, G>> {
         let span = &expression.span().cloned().unwrap_or_default();
         match expression {
             // Cast
             Expression::Cast(_) => unimplemented!("casts not implemented"),
+
+            // LengthOf
+            Expression::LengthOf(lengthof) => self.enforce_lengthof(cs, lengthof, span),
 
             // Variables
             Expression::VariableRef(variable_ref) => self.evaluate_ref(variable_ref),
@@ -106,15 +119,10 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
                     BinaryOperation::Mul => enforce_mul(cs, resolved_left, resolved_right, span),
                     BinaryOperation::Div => enforce_div(cs, resolved_left, resolved_right, span),
                     BinaryOperation::Pow => enforce_pow(cs, resolved_left, resolved_right, span),
-                    BinaryOperation::Or => {
-                        enforce_or(cs, resolved_left, resolved_right, span).map_err(ExpressionError::BooleanError)
-                    }
-                    BinaryOperation::And => {
-                        enforce_and(cs, resolved_left, resolved_right, span).map_err(ExpressionError::BooleanError)
-                    }
+                    BinaryOperation::Or => enforce_or(cs, resolved_left, resolved_right, span),
+                    BinaryOperation::And => enforce_and(cs, resolved_left, resolved_right, span),
                     BinaryOperation::Eq => evaluate_eq(cs, resolved_left, resolved_right, span),
-                    BinaryOperation::Ne => evaluate_not(evaluate_eq(cs, resolved_left, resolved_right, span)?, span)
-                        .map_err(ExpressionError::BooleanError),
+                    BinaryOperation::Ne => evaluate_not(evaluate_eq(cs, resolved_left, resolved_right, span)?, span),
                     BinaryOperation::Ge => evaluate_ge(cs, resolved_left, resolved_right, span),
                     BinaryOperation::Gt => evaluate_gt(cs, resolved_left, resolved_right, span),
                     BinaryOperation::Le => evaluate_le(cs, resolved_left, resolved_right, span),

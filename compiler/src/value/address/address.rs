@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with the Leo library. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{errors::AddressError, ConstrainedValue, GroupType, IntegerTrait};
-use leo_ast::{InputValue, Span};
+use crate::{ConstrainedValue, GroupType, IntegerTrait};
+use leo_ast::InputValue;
+use leo_errors::{CompilerError, Result, Span};
 
-use snarkvm_dpc::{account::AccountAddress, testnet1::instantiated::Components};
+use snarkvm_dpc::{account::Address as AleoAddress, testnet1::instantiated::Components};
 use snarkvm_fields::PrimeField;
 use snarkvm_gadgets::{
     boolean::Boolean,
@@ -35,16 +36,17 @@ use std::{borrow::Borrow, str::FromStr};
 /// A public address
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Address {
-    pub address: Option<AccountAddress<Components>>,
+    pub address: Option<AleoAddress<Components>>,
     pub bytes: Vec<UInt8>,
 }
 
 impl Address {
-    pub(crate) fn constant(address: String, span: &Span) -> Result<Self, AddressError> {
-        let address = AccountAddress::from_str(&address).map_err(|error| AddressError::account_error(error, span))?;
+    pub(crate) fn constant(address: String, span: &Span) -> Result<Self> {
+        let address =
+            AleoAddress::from_str(&address).map_err(|e| CompilerError::address_value_account_error(e, span))?;
 
         let mut address_bytes = vec![];
-        address.write(&mut address_bytes).unwrap();
+        address.write_le(&mut address_bytes).unwrap();
 
         let bytes = UInt8::constant_vec(&address_bytes[..]);
 
@@ -63,14 +65,14 @@ impl Address {
         name: &str,
         input_value: Option<InputValue>,
         span: &Span,
-    ) -> Result<ConstrainedValue<'a, F, G>, AddressError> {
+    ) -> Result<ConstrainedValue<'a, F, G>> {
         // Check that the input value is the correct type
         let address_value = match input_value {
             Some(input) => {
                 if let InputValue::Address(string) = input {
                     Some(string)
                 } else {
-                    return Err(AddressError::invalid_address(name.to_owned(), span));
+                    return Err(CompilerError::address_value_invalid_address(name, span).into());
                 }
             }
             None => None,
@@ -80,38 +82,62 @@ impl Address {
             cs.ns(|| format!("`{}: address` {}:{}", name, span.line_start, span.col_start)),
             || address_value.ok_or(SynthesisError::AssignmentMissing),
         )
-        .map_err(|_| AddressError::missing_address(span))?;
+        .map_err(|_| CompilerError::address_value_missing_address(span))?;
 
         Ok(ConstrainedValue::Address(address))
     }
 
-    pub(crate) fn alloc_helper<Fn: FnOnce() -> Result<T, SynthesisError>, T: Borrow<String>>(
+    pub(crate) fn alloc_helper<
+        F: PrimeField,
+        CS: ConstraintSystem<F>,
+        Fn: FnOnce() -> Result<T, SynthesisError>,
+        T: Borrow<String>,
+    >(
+        cs: CS,
         value_gen: Fn,
-    ) -> Result<AccountAddress<Components>, SynthesisError> {
-        let address_string = match value_gen() {
-            Ok(value) => {
-                let string_value = value.borrow().clone();
-                Ok(string_value)
-            }
-            _ => Err(SynthesisError::AssignmentMissing),
-        }?;
-
-        AccountAddress::from_str(&address_string).map_err(|_| SynthesisError::AssignmentMissing)
+    ) -> Result<AleoAddress<Components>, SynthesisError> {
+        if cs.is_in_setup_mode() {
+            Ok(AleoAddress::<Components>::default())
+        } else {
+            let address_string = value_gen()?.borrow().clone();
+            AleoAddress::from_str(&address_string).map_err(|_| SynthesisError::AssignmentMissing)
+        }
     }
 }
 
 impl<F: PrimeField> AllocGadget<String, F> for Address {
-    fn alloc<Fn: FnOnce() -> Result<T, SynthesisError>, T: Borrow<String>, CS: ConstraintSystem<F>>(
-        cs: CS,
+    fn alloc_constant<Fn: FnOnce() -> Result<T, SynthesisError>, T: Borrow<String>, CS: ConstraintSystem<F>>(
+        _cs: CS,
         value_gen: Fn,
     ) -> Result<Self, SynthesisError> {
-        let address = Self::alloc_helper(value_gen)?;
+        let address = {
+            let address_string = value_gen()?.borrow().clone();
+            AleoAddress::from_str(&address_string).map_err(|_| SynthesisError::AssignmentMissing)?
+        };
         let mut address_bytes = vec![];
         address
-            .write(&mut address_bytes)
+            .write_le(&mut address_bytes)
             .map_err(|_| SynthesisError::AssignmentMissing)?;
 
-        let bytes = UInt8::alloc_vec(cs, &address_bytes[..])?;
+        let bytes = UInt8::constant_vec(&address_bytes[..]);
+
+        Ok(Address {
+            address: Some(address),
+            bytes,
+        })
+    }
+
+    fn alloc<Fn: FnOnce() -> Result<T, SynthesisError>, T: Borrow<String>, CS: ConstraintSystem<F>>(
+        mut cs: CS,
+        value_gen: Fn,
+    ) -> Result<Self, SynthesisError> {
+        let address = Self::alloc_helper(cs.ns(|| "allocate the address"), value_gen)?;
+        let mut address_bytes = vec![];
+        address
+            .write_le(&mut address_bytes)
+            .map_err(|_| SynthesisError::AssignmentMissing)?;
+
+        let bytes = UInt8::alloc_vec(cs.ns(|| "allocate the address bytes"), &address_bytes[..])?;
 
         Ok(Address {
             address: Some(address),
@@ -120,16 +146,16 @@ impl<F: PrimeField> AllocGadget<String, F> for Address {
     }
 
     fn alloc_input<Fn: FnOnce() -> Result<T, SynthesisError>, T: Borrow<String>, CS: ConstraintSystem<F>>(
-        cs: CS,
+        mut cs: CS,
         value_gen: Fn,
     ) -> Result<Self, SynthesisError> {
-        let address = Self::alloc_helper(value_gen)?;
+        let address = Self::alloc_helper(cs.ns(|| "allocate the address"), value_gen)?;
         let mut address_bytes = vec![];
         address
-            .write(&mut address_bytes)
+            .write_le(&mut address_bytes)
             .map_err(|_| SynthesisError::AssignmentMissing)?;
 
-        let bytes = UInt8::alloc_input_vec_le(cs, &address_bytes[..])?;
+        let bytes = UInt8::alloc_input_vec_le(cs.ns(|| "allocate the address bytes"), &address_bytes[..])?;
 
         Ok(Address {
             address: Some(address),
@@ -200,7 +226,11 @@ impl<F: PrimeField> ConditionalEqGadget<F> for Address {
 }
 
 fn cond_select_helper(first: &Address, second: &Address, cond: bool) -> Address {
-    if cond { first.clone() } else { second.clone() }
+    if cond {
+        first.clone()
+    } else {
+        second.clone()
+    }
 }
 
 impl<F: PrimeField> CondSelectGadget<F> for Address {

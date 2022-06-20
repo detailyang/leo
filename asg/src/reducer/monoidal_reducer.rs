@@ -68,6 +68,10 @@ pub trait MonoidalReducerExpression<'a, T: Monoid> {
         inner
     }
 
+    fn reduce_lengthof_expression(&mut self, input: &LengthOfExpression<'a>, inner: T) -> T {
+        inner
+    }
+
     fn reduce_constant(&mut self, input: &Constant<'a>) -> T {
         T::default()
     }
@@ -118,7 +122,7 @@ pub trait MonoidalReducerStatement<'a, T: Monoid>: MonoidalReducerExpression<'a,
         condition.append(if_true).append_option(if_false)
     }
 
-    fn reduce_formatted_string(&mut self, input: &FormatString<'a>, parameters: Vec<T>) -> T {
+    fn reduce_formatted_string(&mut self, input: &ConsoleArgs<'a>, parameters: Vec<T>) -> T {
         T::default().append_all(parameters.into_iter())
     }
 

@@ -1,6 +1,6 @@
 [package]
 name = "leo-lang"
-version = "1.5.2"
+version = "1.5.3"
 authors = [ "The Aleo Team <hello@aleo.org>" ]
 description = "The Leo programming language"
 homepage = "https://aleo.org"
@@ -29,7 +29,9 @@ members = [
   "asg",
   "asg-passes",
   "ast",
+  "ast-passes",
   "compiler",
+  "errors",
   "grammar",
   "imports",
   "input",
@@ -37,58 +39,69 @@ members = [
   "package",
   "parser",
   "state",
+  "stdlib",
   "synthesizer",
-  "test-framework"
+  "test-framework",
+  "wasm"
 ]
 
 [dependencies.leo-ast]
 path = "./ast"
-version = "1.5.2"
+version = "1.5.3"
 
 [dependencies.leo-compiler]
 path = "./compiler"
-version = "1.5.2"
+version = "1.5.3"
+
+[dependencies.leo-errors]
+path = "./errors"
+version = "1.5.3"
 
 [dependencies.leo-imports]
 path = "./imports"
-version = "1.5.2"
+version = "1.5.3"
 
 [dependencies.leo-input]
 path = "./input"
-version = "1.5.2"
+version = "1.5.3"
 
 [dependencies.leo-package]
 path = "./package"
-version = "1.5.2"
+version = "1.5.3"
+
+[dependencies.leo-parser]
+path = "./parser"
+version = "1.5.3"
 
 [dependencies.leo-state]
 path = "./state"
-version = "1.5.2"
+version = "1.5.3"
+
+[dependencies.leo-stdlib]
+path = "./stdlib"
+version = "1.5.3"
 
 [dependencies.leo-synthesizer]
 path = "./synthesizer"
-version = "1.5.2"
+version = "1.5.3"
 
 [dependencies.snarkvm-algorithms]
-version = "0.6.0"
+version = "0.7.9"
 
 [dependencies.snarkvm-curves]
-version = "0.6.0"
+version = "0.7.9"
 default-features = false
 
 [dependencies.snarkvm-gadgets]
-version = "0.6.0"
+version = "0.7.9"
 default-features = false
 
 [dependencies.snarkvm-r1cs]
-version = "0.6.0"
+version = "0.7.9"
 default-features = false
 
 [dependencies.snarkvm-utilities]
-version = "0.6.0"
-
-[dependencies.anyhow]
-version = "1.0"
+version = "0.7.9"
 
 [dependencies.structopt]
 version = "0.3"
@@ -96,17 +109,24 @@ version = "0.3"
 [dependencies.clap]
 version = "2.33.3"
 
+[dependencies]
+color-backtrace = "0.5.1"
+
 [dependencies.colored]
 version = "2.0"
 
 [dependencies.dirs]
-version = "3.0.2"
+version = "4.0.0"
 
 [dependencies.console]
-version = "0.14.0"
+version = "0.15.0"
 
 [dependencies.from-pest]
 version = "0.3.1"
+
+[dependencies.indexmap]
+version = "1.7"
+features = ["serde"]
 
 [dependencies.lazy_static]
 version = "1.4.0"
@@ -121,7 +141,7 @@ version = "0.8"
 version = "0.6.3"
 
 [dependencies.reqwest]
-version = "0.11.4"
+version = "0.11.6"
 features = [ "blocking", "json", "multipart" ]
 
 [dependencies.self_update]
@@ -135,9 +155,6 @@ features = [ "derive" ]
 [dependencies.serde_json]
 version = "1.0"
 
-[dependencies.thiserror]
-version = "1.0"
-
 [dependencies.toml]
 version = "0.5"
 
@@ -145,7 +162,7 @@ version = "0.5"
 version = "0.1"
 
 [dependencies.tracing-subscriber]
-version = "0.2"
+version = "0.3.1"
 features = [ "fmt" ]
 
 [dependencies.zip]
@@ -158,7 +175,7 @@ version = "0.12.1"
 version = "0.11.2"
 
 [dev-dependencies.assert_cmd]
-version = "1.0.7"
+version = "2.0.2"
 
 [dev-dependencies.test_dir]
 version = "0.1.0"

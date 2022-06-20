@@ -15,7 +15,7 @@
 // along with the Leo library. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::tokenizer::{Char, Token};
-use leo_ast::Span;
+use leo_errors::Span;
 use serde::{Deserialize, Serialize};
 use tendril::StrTendril;
 
@@ -101,7 +101,7 @@ impl Token {
                 return None;
             }
 
-            if let Ok(ascii_number) = u8::from_str_radix(&hex_string, 16) {
+            if let Ok(ascii_number) = u8::from_str_radix(hex_string, 16) {
                 // According to RFC, we allow only values less than 128.
                 if ascii_number > 127 {
                     return None;
@@ -123,7 +123,7 @@ impl Token {
                 return None;
             }
 
-            if let Ok(hex) = u32::from_str_radix(&unicode_number, 16) {
+            if let Ok(hex) = u32::from_str_radix(unicode_number, 16) {
                 if let Some(character) = std::char::from_u32(hex) {
                     // scalar
                     return Some(Char::Scalar(character));
@@ -280,7 +280,7 @@ impl Token {
                     }
                 }
 
-                if i == input.len() || i == 1 || !end {
+                if i == input.len() || !end {
                     return (0, None);
                 }
 
@@ -388,6 +388,9 @@ impl Token {
                     return (len, Some(Token::DotDotDot));
                 } else if let Some(len) = eat(input, "..") {
                     return (len, Some(Token::DotDot));
+                } else if let Some(len) = eat(input, ".len()") {
+                    // FIXME: remove this code once we allow method calls
+                    return (len, Some(Token::LengthOf));
                 }
                 return (1, Some(Token::Dot));
             }
@@ -516,8 +519,8 @@ impl Token {
                     "Self" => Token::BigSelf,
                     "self" => Token::LittleSelf,
                     "static" => Token::Static,
-                    "string" => Token::String,
                     "true" => Token::True,
+                    "type" => Token::Type,
                     "u8" => Token::U8,
                     "u16" => Token::U16,
                     "u32" => Token::U32,

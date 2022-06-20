@@ -18,9 +18,9 @@ use crate::{commands::Command, context::Context};
 use leo_compiler::{
     compiler::{thread_leaked_context, Compiler},
     group::targets::edwards_bls12::EdwardsGroupType,
-    CompilerOptions,
-    TheoremOptions,
+    AstSnapshotOptions, CompilerOptions,
 };
+use leo_errors::{CliError, Result};
 use leo_package::{
     inputs::*,
     outputs::{ChecksumFile, CircuitFile, OutputsDirectory, OUTPUTS_DIRECTORY_NAME},
@@ -28,7 +28,6 @@ use leo_package::{
 };
 use leo_synthesizer::{CircuitSynthesizer, SerializedCircuit};
 
-use anyhow::{anyhow, Result};
 use snarkvm_curves::{bls12_377::Bls12_377, edwards_bls12::Fq};
 use snarkvm_r1cs::ConstraintSystem;
 use structopt::StructOpt;
@@ -36,7 +35,7 @@ use tracing::span::Span;
 
 /// Compiler Options wrapper for Build command. Also used by other commands which
 /// require Build command output as their input.
-#[derive(StructOpt, Clone, Debug)]
+#[derive(StructOpt, Clone, Debug, Default)]
 pub struct BuildOptions {
     #[structopt(long, help = "Disable constant folding compiler optimization")]
     pub disable_constant_folding: bool,
@@ -44,41 +43,29 @@ pub struct BuildOptions {
     pub disable_code_elimination: bool,
     #[structopt(long, help = "Disable all compiler optimizations")]
     pub disable_all_optimizations: bool,
-    #[structopt(long, help = "Writes all theorem input AST files.")]
-    pub enable_all_theorems: bool,
-    #[structopt(long, help = "Writes AST files needed for the initial theorem before any changes.")]
-    pub enable_initial_theorem: bool,
-    #[structopt(long, help = "Writes AST files needed for canonicalization theorem.")]
-    pub enable_canonicalized_theorem: bool,
-    #[structopt(long, help = "Writes AST files needed for type inference theorem.")]
-    pub enable_type_inferenced_theorem: bool,
-}
-
-impl Default for BuildOptions {
-    fn default() -> Self {
-        Self {
-            disable_constant_folding: true,
-            disable_code_elimination: true,
-            disable_all_optimizations: true,
-            enable_all_theorems: false,
-            enable_initial_theorem: false,
-            enable_canonicalized_theorem: false,
-            enable_type_inferenced_theorem: false,
-        }
-    }
+    #[structopt(long, help = "Enable spans in AST snapshots.")]
+    pub enable_spans: bool,
+    #[structopt(long, help = "Writes all AST snapshots for the different compiler phases.")]
+    pub enable_all_ast_snapshots: bool,
+    #[structopt(long, help = "Writes AST snapshot of the initial parse.")]
+    pub enable_initial_ast_snapshot: bool,
+    #[structopt(long, help = "Writes AST snapshot after the import resolution phase.")]
+    pub enable_imports_resolved_ast_snapshot: bool,
+    #[structopt(long, help = "Writes AST snapshot after the canonicalization phase.")]
+    pub enable_canonicalized_ast_snapshot: bool,
+    #[structopt(long, help = "Writes AST snapshot after the type inference phase.")]
+    pub enable_type_inferenced_ast_snapshot: bool,
 }
 
 impl From<BuildOptions> for CompilerOptions {
     fn from(options: BuildOptions) -> Self {
-        if !options.disable_all_optimizations {
+        if options.disable_all_optimizations {
             CompilerOptions {
-                canonicalization_enabled: true,
-                constant_folding_enabled: true,
-                dead_code_elimination_enabled: true,
+                constant_folding_enabled: false,
+                dead_code_elimination_enabled: false,
             }
         } else {
             CompilerOptions {
-                canonicalization_enabled: true,
                 constant_folding_enabled: !options.disable_constant_folding,
                 dead_code_elimination_enabled: !options.disable_code_elimination,
             }
@@ -86,19 +73,23 @@ impl From<BuildOptions> for CompilerOptions {
     }
 }
 
-impl From<BuildOptions> for TheoremOptions {
+impl From<BuildOptions> for AstSnapshotOptions {
     fn from(options: BuildOptions) -> Self {
-        if options.enable_all_theorems {
-            TheoremOptions {
+        if options.enable_all_ast_snapshots {
+            AstSnapshotOptions {
+                spans_enabled: options.enable_spans,
                 initial: true,
+                imports_resolved: true,
                 canonicalized: true,
                 type_inferenced: true,
             }
         } else {
-            TheoremOptions {
-                initial: options.enable_initial_theorem,
-                canonicalized: options.enable_canonicalized_theorem,
-                type_inferenced: options.enable_type_inferenced_theorem,
+            AstSnapshotOptions {
+                spans_enabled: options.enable_spans,
+                initial: options.enable_initial_ast_snapshot,
+                imports_resolved: options.enable_imports_resolved_ast_snapshot,
+                canonicalized: options.enable_canonicalized_ast_snapshot,
+                type_inferenced: options.enable_type_inferenced_ast_snapshot,
             }
         }
     }
@@ -126,7 +117,14 @@ impl Command for Build {
 
     fn apply(self, context: Context, _: Self::Input) -> Result<Self::Output> {
         let path = context.dir()?;
-        let package_name = context.manifest()?.get_package_name();
+        let manifest = context.manifest().map_err(|_| CliError::manifest_file_not_found())?;
+        let package_name = manifest.get_package_name();
+        let imports_map = manifest.get_imports_map().unwrap_or_default();
+
+        // Error out if there are dependencies but no lock file found.
+        if !imports_map.is_empty() && !context.lock_file_exists()? {
+            return Err(CliError::dependencies_are_not_installed().into());
+        }
 
         // Sanitize the package path to the root directory.
         let mut package_path = path.clone();
@@ -142,7 +140,7 @@ impl Command for Build {
 
         // Compile the main.leo file along with constraints
         if !MainFile::exists_at(&package_path) {
-            return Err(anyhow!("File main.leo not found in src/ directory"));
+            return Err(CliError::package_main_file_not_found().into());
         }
 
         // Create the output directory
@@ -162,6 +160,12 @@ impl Command for Build {
         // Log compilation of files to console
         tracing::info!("Compiling main program... ({:?})", main_file_path);
 
+        let imports_map = if context.lock_file_exists()? {
+            context.lock_file()?.to_import_map()
+        } else {
+            Default::default()
+        };
+
         // Load the program at `main_file_path`
         let program = Compiler::<Fq, EdwardsGroupType>::parse_program_with_input(
             package_name.clone(),
@@ -173,6 +177,7 @@ impl Command for Build {
             &state_path,
             thread_leaked_context(),
             Some(self.compiler_options.clone().into()),
+            imports_map,
             Some(self.compiler_options.into()),
         )?;
 

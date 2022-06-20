@@ -16,8 +16,9 @@
 
 //! The in memory stored value for a defined name in a compiled Leo program.
 
-use crate::{errors::ValueError, Address, Char, FieldType, GroupType, Integer};
-use leo_asg::{Circuit, Identifier, Span, Type};
+use crate::{Address, Char, FieldType, GroupType, Integer};
+use leo_asg::{Circuit, Identifier, Type};
+use leo_errors::{Result, Span};
 
 use snarkvm_fields::PrimeField;
 use snarkvm_gadgets::{
@@ -51,7 +52,7 @@ pub enum ConstrainedValue<'a, F: PrimeField, G: GroupType<F>> {
 }
 
 impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedValue<'a, F, G> {
-    pub(crate) fn to_type(&self, span: &Span) -> Result<Type<'a>, ValueError> {
+    pub(crate) fn to_type(&self, span: &Span) -> Result<Type<'a>> {
         Ok(match self {
             // Data types
             ConstrainedValue::Address(_address) => Type::Address,
@@ -96,8 +97,8 @@ impl<'a, F: PrimeField, G: GroupType<F>> fmt::Display for ConstrainedValue<'a, F
                     .unwrap_or_else(|| "[allocated]".to_string())
             ),
             ConstrainedValue::Char(ref value) => write!(f, "{}", value),
-            ConstrainedValue::Field(ref value) => write!(f, "{:?}", value),
-            ConstrainedValue::Group(ref value) => write!(f, "{:?}", value),
+            ConstrainedValue::Field(ref value) => write!(f, "{}", value),
+            ConstrainedValue::Group(ref value) => write!(f, "{}", value),
             ConstrainedValue::Integer(ref value) => write!(f, "{}", value),
 
             // Data type wrappers
@@ -124,7 +125,7 @@ impl<'a, F: PrimeField, G: GroupType<F>> fmt::Display for ConstrainedValue<'a, F
 
                 write!(f, "({})", values)
             }
-            ConstrainedValue::CircuitExpression(ref circuit, ref members) => {
+            ConstrainedValue::CircuitExpression(circuit, ref members) => {
                 write!(f, "{} {{", circuit.name.borrow())?;
                 for (i, member) in members.iter().enumerate() {
                     write!(f, "{}: {}", member.0, member.1)?;

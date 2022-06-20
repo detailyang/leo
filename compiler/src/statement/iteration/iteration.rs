@@ -17,16 +17,11 @@
 //! Enforces an iteration statement in a compiled Leo program.
 
 use crate::{
-    errors::StatementError,
-    program::ConstrainedProgram,
-    value::ConstrainedValue,
-    GroupType,
-    IndicatorAndConstrainedValue,
-    Integer,
-    IntegerTrait,
-    StatementResult,
+    program::ConstrainedProgram, value::ConstrainedValue, GroupType, IndicatorAndConstrainedValue, Integer,
+    IntegerTrait, StatementResult,
 };
 use leo_asg::IterationStatement;
+use leo_errors::CompilerError;
 
 use snarkvm_fields::PrimeField;
 use snarkvm_gadgets::{boolean::Boolean, integers::uint::UInt32};
@@ -47,13 +42,21 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
         let from = self
             .enforce_index(cs, statement.start.get(), &span)?
             .to_usize()
-            .ok_or_else(|| StatementError::loop_index_const(&span))?;
+            .ok_or_else(|| CompilerError::statement_loop_index_const(&span))?;
         let to = self
             .enforce_index(cs, statement.stop.get(), &span)?
             .to_usize()
-            .ok_or_else(|| StatementError::loop_index_const(&span))?;
+            .ok_or_else(|| CompilerError::statement_loop_index_const(&span))?;
 
-        for i in from..to {
+        let iter: Box<dyn Iterator<Item = usize>> = match (from < to, statement.inclusive) {
+            (true, true) => Box::new(from..=to),
+            (true, false) => Box::new(from..to),
+            (false, true) => Box::new((to..=from).rev()),
+            // add the range to the values to get correct bound
+            (false, false) => Box::new(((to + 1)..(from + 1)).rev()),
+        };
+
+        for i in iter {
             // Store index in current function scope.
             // For loop scope is not implemented.
             let variable = statement.variable.borrow();

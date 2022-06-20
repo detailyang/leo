@@ -18,17 +18,12 @@
 
 use std::convert::TryInto;
 
-use crate::{
-    errors::{ExpressionError, StatementError},
-    program::ConstrainedProgram,
-    value::ConstrainedValue,
-    GroupType,
-    Integer,
-};
+use crate::{program::ConstrainedProgram, value::ConstrainedValue, GroupType, Integer};
 use leo_asg::{ConstInt, Expression, Node};
+use leo_errors::{CompilerError, Result};
 
 use snarkvm_fields::PrimeField;
-use snarkvm_gadgets::{eq::EvaluateEqGadget, select::CondSelectGadget};
+use snarkvm_gadgets::traits::{eq::EvaluateEqGadget, select::CondSelectGadget};
 use snarkvm_r1cs::ConstraintSystem;
 
 use super::ResolverContext;
@@ -39,7 +34,7 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
         cs: &mut CS,
         mut context: ResolverContext<'a, 'b, F, G>,
         index: &'a Expression<'a>,
-    ) -> Result<(), StatementError> {
+    ) -> Result<()> {
         let input_len = context.input.len();
 
         let index_resolved = self.enforce_index(cs, index, &context.span)?;
@@ -48,11 +43,10 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
                 ConstrainedValue::Array(input) => {
                     if let Some(index) = index_resolved.to_usize() {
                         if index >= input.len() {
-                            Err(StatementError::array_assign_index_bounds(
-                                index,
-                                input.len(),
-                                &context.span,
-                            ))
+                            Err(
+                                CompilerError::statement_array_assign_index_bounds(index, input.len(), &context.span)
+                                    .into(),
+                            )
                         } else {
                             let target = input.get_mut(index).unwrap();
                             if context.remaining_accesses.is_empty() {
@@ -68,8 +62,8 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
                             let array_len: u32 = input
                                 .len()
                                 .try_into()
-                                .map_err(|_| ExpressionError::array_length_out_of_bounds(&span))?;
-                            self.array_bounds_check(cs, &&index_resolved, array_len, &span)?;
+                                .map_err(|_| CompilerError::array_length_out_of_bounds(&span))?;
+                            self.array_bounds_check(cs, &index_resolved, array_len, &span)?;
                         }
 
                         for (i, item) in input.iter_mut().enumerate() {
@@ -81,11 +75,11 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
 
                             let index_bounded = i
                                 .try_into()
-                                .map_err(|_| ExpressionError::array_index_out_of_legal_bounds(&span))?;
+                                .map_err(|_| CompilerError::array_index_out_of_legal_bounds(&span))?;
                             let const_index = ConstInt::U32(index_bounded).cast_to(&index_resolved.get_type());
                             let index_comparison = index_resolved
                                 .evaluate_equal(eq_namespace, &Integer::new(&const_index))
-                                .map_err(|_| ExpressionError::cannot_evaluate("==".to_string(), &span))?;
+                                .map_err(|_| CompilerError::cannot_evaluate_expression("==", &span))?;
 
                             let mut unique_namespace = cs.ns(|| {
                                 format!(
@@ -116,25 +110,23 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
                                 unique_namespace,
                                 &index_comparison,
                                 &temp_item,
-                                &item,
+                                item,
                             )
-                            .map_err(|e| ExpressionError::cannot_enforce("conditional select".to_string(), e, &span))?;
+                            .map_err(|e| CompilerError::cannot_enforce_expression("conditional select", e, &span))?;
                             *item = value;
                         }
                         Ok(())
                     }
                 }
-                _ => Err(StatementError::array_assign_interior_index(&context.span)),
+                _ => Err(CompilerError::statement_array_assign_interior_index(&context.span).into()),
             }
         } else if context.from_range && input_len != 0 {
             context.from_range = false;
             if let Some(index) = index_resolved.to_usize() {
                 if index >= input_len {
-                    return Err(StatementError::array_assign_index_bounds(
-                        index,
-                        input_len,
-                        &context.span,
-                    ));
+                    return Err(
+                        CompilerError::statement_array_assign_index_bounds(index, input_len, &context.span).into(),
+                    );
                 }
                 let target = context.input.remove(index);
 
@@ -152,8 +144,8 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
                         .input
                         .len()
                         .try_into()
-                        .map_err(|_| ExpressionError::array_length_out_of_bounds(&span))?;
-                    self.array_bounds_check(cs, &&index_resolved, array_len, &span)?;
+                        .map_err(|_| CompilerError::array_length_out_of_bounds(&span))?;
+                    self.array_bounds_check(cs, &index_resolved, array_len, &span)?;
                 }
 
                 for (i, item) in context.input.iter_mut().enumerate() {
@@ -165,11 +157,11 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
 
                     let index_bounded = i
                         .try_into()
-                        .map_err(|_| ExpressionError::array_index_out_of_legal_bounds(&span))?;
+                        .map_err(|_| CompilerError::array_index_out_of_legal_bounds(&span))?;
                     let const_index = ConstInt::U32(index_bounded).cast_to(&index_resolved.get_type());
                     let index_comparison = index_resolved
                         .evaluate_equal(eq_namespace, &Integer::new(&const_index))
-                        .map_err(|_| ExpressionError::cannot_evaluate("==".to_string(), &span))?;
+                        .map_err(|_| CompilerError::cannot_evaluate_expression("==", &span))?;
 
                     let mut unique_namespace = cs.ns(|| {
                         format!(
@@ -197,14 +189,14 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
                         item
                     };
                     let value =
-                        ConstrainedValue::conditionally_select(unique_namespace, &index_comparison, &temp_item, &item)
-                            .map_err(|e| ExpressionError::cannot_enforce("conditional select".to_string(), e, &span))?;
+                        ConstrainedValue::conditionally_select(unique_namespace, &index_comparison, &temp_item, item)
+                            .map_err(|e| CompilerError::cannot_enforce_expression("conditional select", e, &span))?;
                     **item = value;
                 }
                 Ok(())
             }
         } else {
-            Err(StatementError::array_assign_interior_index(&context.span))
+            Err(CompilerError::statement_array_assign_interior_index(&context.span).into())
         }
     }
 }

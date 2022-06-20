@@ -48,19 +48,18 @@ impl fmt::Display for Char {
 pub enum Token {
     // Lexical Grammar
     // Literals
-    CommentLine(#[serde(with = "leo_ast::common::tendril_json")] StrTendril),
-    CommentBlock(#[serde(with = "leo_ast::common::tendril_json")] StrTendril),
+    CommentLine(#[serde(with = "leo_errors::common::tendril_json")] StrTendril),
+    CommentBlock(#[serde(with = "leo_errors::common::tendril_json")] StrTendril),
     StringLit(Vec<leo_ast::Char>),
-    Ident(#[serde(with = "leo_ast::common::tendril_json")] StrTendril),
-    Int(#[serde(with = "leo_ast::common::tendril_json")] StrTendril),
+    Ident(#[serde(with = "leo_errors::common::tendril_json")] StrTendril),
+    Int(#[serde(with = "leo_errors::common::tendril_json")] StrTendril),
     True,
     False,
-    AddressLit(#[serde(with = "leo_ast::common::tendril_json")] StrTendril),
+    AddressLit(#[serde(with = "leo_errors::common::tendril_json")] StrTendril),
     CharLit(Char),
 
-    At,
-
     // Symbols
+    At,
     Not,
     And,
     Or,
@@ -138,7 +137,12 @@ pub enum Token {
     Mut,
     Return,
     Static,
-    String,
+    Type,
+
+    // Not yet in ABNF
+    // arr.len() token - hacky zone
+    LengthOf,
+
     // Not yet in ABNF
     // BitAnd,
     // BitAndEq,
@@ -192,8 +196,9 @@ pub const KEYWORD_TOKENS: &[Token] = &[
     Token::BigSelf,
     Token::LittleSelf,
     Token::Static,
-    Token::String,
     Token::True,
+    Token::Type,
+    Token::LengthOf,
     Token::U8,
     Token::U16,
     Token::U32,
@@ -304,7 +309,8 @@ impl fmt::Display for Token {
             Mut => write!(f, "mut"),
             Return => write!(f, "return"),
             Static => write!(f, "static"),
-            String => write!(f, "string"),
+            Type => write!(f, "type"),
+            LengthOf => write!(f, ".len()"), // FIXME
             Eof => write!(f, ""),
             // BitAnd => write!(f, "&"),
             // BitAndEq => write!(f, "&="),

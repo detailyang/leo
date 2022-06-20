@@ -12,7 +12,7 @@ outputs:
             line_stop: 1
             col_start: 2
             col_stop: 12
-            path: test
+            path: ""
             content: "(+, _)group"
   - Value:
       Group:
@@ -24,7 +24,7 @@ outputs:
             line_stop: 1
             col_start: 2
             col_stop: 12
-            path: test
+            path: ""
             content: "(_, -)group"
   - Value:
       Group:
@@ -36,7 +36,7 @@ outputs:
             line_stop: 1
             col_start: 2
             col_stop: 12
-            path: test
+            path: ""
             content: "(+, -)group"
   - Value:
       Group:
@@ -48,7 +48,7 @@ outputs:
             line_stop: 1
             col_start: 2
             col_stop: 12
-            path: test
+            path: ""
             content: "(-, +)group"
   - Value:
       Group:
@@ -60,7 +60,7 @@ outputs:
             line_stop: 1
             col_start: 2
             col_stop: 12
-            path: test
+            path: ""
             content: "(+, +)group"
   - Value:
       Group:
@@ -72,7 +72,7 @@ outputs:
             line_stop: 1
             col_start: 2
             col_stop: 12
-            path: test
+            path: ""
             content: "(-, -)group"
   - Value:
       Group:
@@ -84,7 +84,7 @@ outputs:
             line_stop: 1
             col_start: 2
             col_stop: 12
-            path: test
+            path: ""
             content: "(_, _)group"
   - Value:
       Group:
@@ -92,27 +92,29 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123,-456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123,-456)group"
           y:
             Number:
               - "-456"
-              - line_start: 1
-                line_stop: 1
-                col_start: 7
-                col_stop: 10
-                path: test
-                content: "(123,-456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 7
+                  col_stop: 10
+                  path: ""
+                  content: "(123,-456)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 16
-            path: test
+            path: ""
             content: "(123,-456)group"
   - Value:
       Group:
@@ -120,27 +122,29 @@ outputs:
           x:
             Number:
               - "-123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 3
-                col_stop: 6
-                path: test
-                content: "(-123,456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 3
+                  col_stop: 6
+                  path: ""
+                  content: "(-123,456)group"
           y:
             Number:
               - "456"
-              - line_start: 1
-                line_stop: 1
-                col_start: 7
-                col_stop: 10
-                path: test
-                content: "(-123,456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 7
+                  col_stop: 10
+                  path: ""
+                  content: "(-123,456)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 16
-            path: test
+            path: ""
             content: "(-123,456)group"
   - Value:
       Group:
@@ -148,27 +152,29 @@ outputs:
           x:
             Number:
               - "-123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 3
-                col_stop: 6
-                path: test
-                content: "(-123,456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 3
+                  col_stop: 6
+                  path: ""
+                  content: "(-123,456)group"
           y:
             Number:
               - "456"
-              - line_start: 1
-                line_stop: 1
-                col_start: 7
-                col_stop: 10
-                path: test
-                content: "(-123,456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 7
+                  col_stop: 10
+                  path: ""
+                  content: "(-123,456)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 16
-            path: test
+            path: ""
             content: "(-123,456)group"
   - Value:
       Group:
@@ -176,19 +182,20 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, _)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, _)group"
           y: Inferred
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(123, _)group"
   - Value:
       Group:
@@ -196,19 +203,20 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, -)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, -)group"
           y: SignLow
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(123, -)group"
   - Value:
       Group:
@@ -216,19 +224,20 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, -)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, -)group"
           y: SignLow
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(123, -)group"
   - Value:
       Group:
@@ -236,19 +245,20 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, +)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, +)group"
           y: SignHigh
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(123, +)group"
   - Value:
       Group:
@@ -256,19 +266,20 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, +)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, +)group"
           y: SignHigh
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(123, +)group"
   - Value:
       Group:
@@ -276,19 +287,20 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, -)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, -)group"
           y: SignLow
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(123, -)group"
   - Value:
       Group:
@@ -296,19 +308,20 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, _)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, _)group"
           y: Inferred
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(123, _)group"
   - Value:
       Group:
@@ -317,18 +330,19 @@ outputs:
           y:
             Number:
               - "345"
-              - line_start: 1
-                line_stop: 1
-                col_start: 5
-                col_stop: 8
-                path: test
-                content: "(+, 345)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 5
+                  col_stop: 8
+                  path: ""
+                  content: "(+, 345)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(+, 345)group"
   - Value:
       Group:
@@ -337,18 +351,19 @@ outputs:
           y:
             Number:
               - "345"
-              - line_start: 1
-                line_stop: 1
-                col_start: 5
-                col_stop: 8
-                path: test
-                content: "(_, 345)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 5
+                  col_stop: 8
+                  path: ""
+                  content: "(_, 345)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(_, 345)group"
   - Value:
       Group:
@@ -357,18 +372,19 @@ outputs:
           y:
             Number:
               - "345"
-              - line_start: 1
-                line_stop: 1
-                col_start: 5
-                col_stop: 8
-                path: test
-                content: "(+, 345)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 5
+                  col_stop: 8
+                  path: ""
+                  content: "(+, 345)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(+, 345)group"
   - Value:
       Group:
@@ -377,18 +393,19 @@ outputs:
           y:
             Number:
               - "345"
-              - line_start: 1
-                line_stop: 1
-                col_start: 5
-                col_stop: 8
-                path: test
-                content: "(-, 345)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 5
+                  col_stop: 8
+                  path: ""
+                  content: "(-, 345)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(-, 345)group"
   - Value:
       Group:
@@ -397,18 +414,19 @@ outputs:
           y:
             Number:
               - "345"
-              - line_start: 1
-                line_stop: 1
-                col_start: 5
-                col_stop: 8
-                path: test
-                content: "(+, 345)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 5
+                  col_stop: 8
+                  path: ""
+                  content: "(+, 345)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(+, 345)group"
   - Value:
       Group:
@@ -417,18 +435,19 @@ outputs:
           y:
             Number:
               - "345"
-              - line_start: 1
-                line_stop: 1
-                col_start: 5
-                col_stop: 8
-                path: test
-                content: "(-, 345)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 5
+                  col_stop: 8
+                  path: ""
+                  content: "(-, 345)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(-, 345)group"
   - Value:
       Group:
@@ -437,18 +456,19 @@ outputs:
           y:
             Number:
               - "345"
-              - line_start: 1
-                line_stop: 1
-                col_start: 5
-                col_stop: 8
-                path: test
-                content: "(_, 345)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 5
+                  col_stop: 8
+                  path: ""
+                  content: "(_, 345)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 14
-            path: test
+            path: ""
             content: "(_, 345)group"
   - Value:
       Group:
@@ -456,27 +476,29 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, 456)group"
           y:
             Number:
               - "456"
-              - line_start: 1
-                line_stop: 1
-                col_start: 7
-                col_stop: 10
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 7
+                  col_stop: 10
+                  path: ""
+                  content: "(123, 456)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 16
-            path: test
+            path: ""
             content: "(123, 456)group"
   - Value:
       Group:
@@ -484,27 +506,29 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, 456)group"
           y:
             Number:
               - "456"
-              - line_start: 1
-                line_stop: 1
-                col_start: 7
-                col_stop: 10
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 7
+                  col_stop: 10
+                  path: ""
+                  content: "(123, 456)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 16
-            path: test
+            path: ""
             content: "(123, 456)group"
   - Value:
       Group:
@@ -512,27 +536,29 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, 456)group"
           y:
             Number:
               - "456"
-              - line_start: 1
-                line_stop: 1
-                col_start: 7
-                col_stop: 10
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 7
+                  col_stop: 10
+                  path: ""
+                  content: "(123, 456)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 16
-            path: test
+            path: ""
             content: "(123, 456)group"
   - Value:
       Group:
@@ -540,27 +566,29 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, 456)group"
           y:
             Number:
               - "456"
-              - line_start: 1
-                line_stop: 1
-                col_start: 7
-                col_stop: 10
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 7
+                  col_stop: 10
+                  path: ""
+                  content: "(123, 456)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 16
-            path: test
+            path: ""
             content: "(123, 456)group"
   - Value:
       Group:
@@ -568,27 +596,29 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, 456)group"
           y:
             Number:
               - "456"
-              - line_start: 1
-                line_stop: 1
-                col_start: 7
-                col_stop: 10
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 7
+                  col_stop: 10
+                  path: ""
+                  content: "(123, 456)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 16
-            path: test
+            path: ""
             content: "(123, 456)group"
   - Value:
       Group:
@@ -596,27 +626,29 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, 456)group"
           y:
             Number:
               - "456"
-              - line_start: 1
-                line_stop: 1
-                col_start: 7
-                col_stop: 10
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 7
+                  col_stop: 10
+                  path: ""
+                  content: "(123, 456)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 16
-            path: test
+            path: ""
             content: "(123, 456)group"
   - Value:
       Group:
@@ -624,25 +656,27 @@ outputs:
           x:
             Number:
               - "123"
-              - line_start: 1
-                line_stop: 1
-                col_start: 2
-                col_stop: 5
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 2
+                  col_stop: 5
+                  path: ""
+                  content: "(123, 456)group"
           y:
             Number:
               - "456"
-              - line_start: 1
-                line_stop: 1
-                col_start: 7
-                col_stop: 10
-                path: test
-                content: "(123, 456)group"
+              - span:
+                  line_start: 1
+                  line_stop: 1
+                  col_start: 7
+                  col_stop: 10
+                  path: ""
+                  content: "(123, 456)group"
           span:
             line_start: 1
             line_stop: 1
             col_start: 2
             col_stop: 16
-            path: test
+            path: ""
             content: "(123, 456)group"

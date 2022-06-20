@@ -48,6 +48,7 @@ impl<'a, R: ReconstructingReducerExpression<'a>> ReconstructingDirector<'a, R> {
             Expression::CircuitInit(e) => self.reduce_circuit_init(e),
             Expression::Ternary(e) => self.reduce_ternary_expression(e),
             Expression::Cast(e) => self.reduce_cast_expression(e),
+            Expression::LengthOf(e) => Expression::LengthOf(e), // TODO: implement REDUCER
             Expression::Constant(e) => self.reduce_constant(e),
             Expression::TupleAccess(e) => self.reduce_tuple_access(e),
             Expression::TupleInit(e) => self.reduce_tuple_init(e),
@@ -243,7 +244,7 @@ impl<'a, R: ReconstructingReducerStatement<'a>> ReconstructingDirector<'a, R> {
             .reduce_conditional_statement(input, condition, if_true, if_false)
     }
 
-    pub fn reduce_formatted_string(&mut self, input: FormatString<'a>) -> FormatString<'a> {
+    pub fn reduce_formatted_string(&mut self, input: ConsoleArgs<'a>) -> ConsoleArgs<'a> {
         let parameters = input
             .parameters
             .iter()
@@ -259,7 +260,7 @@ impl<'a, R: ReconstructingReducerStatement<'a>> ReconstructingDirector<'a, R> {
                 let argument = self.reduce_expression(argument.get());
                 self.reducer.reduce_console_assert(input, argument)
             }
-            ConsoleFunction::Debug(f) | ConsoleFunction::Error(f) | ConsoleFunction::Log(f) => {
+            ConsoleFunction::Error(f) | ConsoleFunction::Log(f) => {
                 let formatted = self.reduce_formatted_string(f.clone());
                 self.reducer.reduce_console_log(input, formatted)
             }
@@ -334,6 +335,7 @@ impl<'a, R: ReconstructingReducerProgram<'a>> ReconstructingDirector<'a, R> {
             .iter()
             .map(|(module, import)| (module.clone(), self.reduce_program(import.clone())))
             .collect();
+        let aliases = input.aliases.iter().map(|(name, a)| (name.clone(), *a)).collect();
         let functions = input
             .functions
             .iter()
@@ -352,6 +354,6 @@ impl<'a, R: ReconstructingReducerProgram<'a>> ReconstructingDirector<'a, R> {
             .collect();
 
         self.reducer
-            .reduce_program(input, imported_modules, functions, circuits, global_consts)
+            .reduce_program(input, imported_modules, aliases, functions, circuits, global_consts)
     }
 }

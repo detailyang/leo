@@ -14,7 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with the Leo library. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{Expression, Identifier, PositiveNumber, Span};
+use crate::{Expression, Identifier, PositiveNumber};
+use leo_errors::Span;
 
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -23,7 +24,7 @@ use std::fmt;
 pub enum AssigneeAccess {
     ArrayRange(Option<Expression>, Option<Expression>),
     ArrayIndex(Expression),
-    Tuple(PositiveNumber, Span),
+    Tuple(PositiveNumber, #[serde(with = "leo_errors::common::span_json")] Span),
     Member(Identifier),
 }
 

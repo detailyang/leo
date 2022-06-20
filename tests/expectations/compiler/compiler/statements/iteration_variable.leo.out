@@ -16,3 +16,7 @@ outputs:
             a:
               type: bool
               value: "true"
+    initial_ast: 50295af39e4998eb71a32ba6fee03a66a58454eeea9640c88158db7b54267826
+    imports_resolved_ast: 68c25d6d280d4f68643bbc1d8c51d67736c89ffd1771e56fcf4cd1c94ab88789
+    canonicalized_ast: 3bfcf50849318026605a427623b9b615bd7797e3eb9d01c3227f6521cf489372
+    type_inferenced_ast: 20eeb9857e1dfcead63b400f76db6ce77d81903c5105b9590766e09a5a6763b8

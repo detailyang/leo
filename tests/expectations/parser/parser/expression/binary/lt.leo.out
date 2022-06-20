@@ -7,58 +7,62 @@ outputs:
         Value:
           Implicit:
             - "1"
-            - line_start: 1
-              line_stop: 1
-              col_start: 1
-              col_stop: 2
-              path: test
-              content: 1 < 1
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 1
+                col_stop: 2
+                path: ""
+                content: 1 < 1
       right:
         Value:
           Implicit:
             - "1"
-            - line_start: 1
-              line_stop: 1
-              col_start: 5
-              col_stop: 6
-              path: test
-              content: 1 < 1
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 5
+                col_stop: 6
+                path: ""
+                content: 1 < 1
       op: Lt
       span:
         line_start: 1
         line_stop: 1
         col_start: 1
         col_stop: 6
-        path: test
+        path: ""
         content: 1 < 1
   - Binary:
       left:
         Value:
           Implicit:
             - "2"
-            - line_start: 1
-              line_stop: 1
-              col_start: 1
-              col_stop: 2
-              path: test
-              content: 2<3
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 1
+                col_stop: 2
+                path: ""
+                content: 2<3
       right:
         Value:
           Implicit:
             - "3"
-            - line_start: 1
-              line_stop: 1
-              col_start: 3
-              col_stop: 4
-              path: test
-              content: 2<3
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 3
+                col_stop: 4
+                path: ""
+                content: 2<3
       op: Lt
       span:
         line_start: 1
         line_stop: 1
         col_start: 1
         col_stop: 4
-        path: test
+        path: ""
         content: 2<3
   - Binary:
       left:
@@ -67,47 +71,50 @@ outputs:
             Value:
               Implicit:
                 - "1"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 1
-                  col_stop: 2
-                  path: test
-                  content: 1 < 2 < 3
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 1
+                    col_stop: 2
+                    path: ""
+                    content: 1 < 2 < 3
           right:
             Value:
               Implicit:
                 - "2"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 5
-                  col_stop: 6
-                  path: test
-                  content: 1 < 2 < 3
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 5
+                    col_stop: 6
+                    path: ""
+                    content: 1 < 2 < 3
           op: Lt
           span:
             line_start: 1
             line_stop: 1
             col_start: 1
             col_stop: 6
-            path: test
+            path: ""
             content: 1 < 2 < 3
       right:
         Value:
           Implicit:
             - "3"
-            - line_start: 1
-              line_stop: 1
-              col_start: 9
-              col_stop: 10
-              path: test
-              content: 1 < 2 < 3
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 9
+                col_stop: 10
+                path: ""
+                content: 1 < 2 < 3
       op: Lt
       span:
         line_start: 1
         line_stop: 1
         col_start: 1
         col_stop: 10
-        path: test
+        path: ""
         content: 1 < 2 < 3
   - Binary:
       left:
@@ -116,29 +123,31 @@ outputs:
             Value:
               Implicit:
                 - "1"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 1
-                  col_stop: 2
-                  path: test
-                  content: 1 + 2 < 3 + 4
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 1
+                    col_stop: 2
+                    path: ""
+                    content: 1 + 2 < 3 + 4
           right:
             Value:
               Implicit:
                 - "2"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 5
-                  col_stop: 6
-                  path: test
-                  content: 1 + 2 < 3 + 4
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 5
+                    col_stop: 6
+                    path: ""
+                    content: 1 + 2 < 3 + 4
           op: Add
           span:
             line_start: 1
             line_stop: 1
             col_start: 1
             col_stop: 6
-            path: test
+            path: ""
             content: 1 + 2 < 3 + 4
       right:
         Binary:
@@ -146,29 +155,31 @@ outputs:
             Value:
               Implicit:
                 - "3"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 9
-                  col_stop: 10
-                  path: test
-                  content: 1 + 2 < 3 + 4
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 9
+                    col_stop: 10
+                    path: ""
+                    content: 1 + 2 < 3 + 4
           right:
             Value:
               Implicit:
                 - "4"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 13
-                  col_stop: 14
-                  path: test
-                  content: 1 + 2 < 3 + 4
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 13
+                    col_stop: 14
+                    path: ""
+                    content: 1 + 2 < 3 + 4
           op: Add
           span:
             line_start: 1
             line_stop: 1
             col_start: 9
             col_stop: 14
-            path: test
+            path: ""
             content: 1 + 2 < 3 + 4
       op: Lt
       span:
@@ -176,7 +187,7 @@ outputs:
         line_stop: 1
         col_start: 1
         col_stop: 14
-        path: test
+        path: ""
         content: 1 + 2 < 3 + 4
   - Binary:
       left:
@@ -185,47 +196,50 @@ outputs:
             Value:
               Implicit:
                 - "1"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 1
-                  col_stop: 2
-                  path: test
-                  content: 1 < 2 < 3
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 1
+                    col_stop: 2
+                    path: ""
+                    content: 1 < 2 < 3
           right:
             Value:
               Implicit:
                 - "2"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 5
-                  col_stop: 6
-                  path: test
-                  content: 1 < 2 < 3
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 5
+                    col_stop: 6
+                    path: ""
+                    content: 1 < 2 < 3
           op: Lt
           span:
             line_start: 1
             line_stop: 1
             col_start: 1
             col_stop: 6
-            path: test
+            path: ""
             content: 1 < 2 < 3
       right:
         Value:
           Implicit:
             - "3"
-            - line_start: 1
-              line_stop: 1
-              col_start: 9
-              col_stop: 10
-              path: test
-              content: 1 < 2 < 3
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 9
+                col_stop: 10
+                path: ""
+                content: 1 < 2 < 3
       op: Lt
       span:
         line_start: 1
         line_stop: 1
         col_start: 1
         col_stop: 10
-        path: test
+        path: ""
         content: 1 < 2 < 3
   - Binary:
       left:
@@ -236,29 +250,31 @@ outputs:
                 Value:
                   Implicit:
                     - "1"
-                    - line_start: 1
-                      line_stop: 1
-                      col_start: 1
-                      col_stop: 2
-                      path: test
-                      content: 1 + 2 < 3 + 4 < 5 + 6
+                    - span:
+                        line_start: 1
+                        line_stop: 1
+                        col_start: 1
+                        col_stop: 2
+                        path: ""
+                        content: 1 + 2 < 3 + 4 < 5 + 6
               right:
                 Value:
                   Implicit:
                     - "2"
-                    - line_start: 1
-                      line_stop: 1
-                      col_start: 5
-                      col_stop: 6
-                      path: test
-                      content: 1 + 2 < 3 + 4 < 5 + 6
+                    - span:
+                        line_start: 1
+                        line_stop: 1
+                        col_start: 5
+                        col_stop: 6
+                        path: ""
+                        content: 1 + 2 < 3 + 4 < 5 + 6
               op: Add
               span:
                 line_start: 1
                 line_stop: 1
                 col_start: 1
                 col_stop: 6
-                path: test
+                path: ""
                 content: 1 + 2 < 3 + 4 < 5 + 6
           right:
             Binary:
@@ -266,29 +282,31 @@ outputs:
                 Value:
                   Implicit:
                     - "3"
-                    - line_start: 1
-                      line_stop: 1
-                      col_start: 9
-                      col_stop: 10
-                      path: test
-                      content: 1 + 2 < 3 + 4 < 5 + 6
+                    - span:
+                        line_start: 1
+                        line_stop: 1
+                        col_start: 9
+                        col_stop: 10
+                        path: ""
+                        content: 1 + 2 < 3 + 4 < 5 + 6
               right:
                 Value:
                   Implicit:
                     - "4"
-                    - line_start: 1
-                      line_stop: 1
-                      col_start: 13
-                      col_stop: 14
-                      path: test
-                      content: 1 + 2 < 3 + 4 < 5 + 6
+                    - span:
+                        line_start: 1
+                        line_stop: 1
+                        col_start: 13
+                        col_stop: 14
+                        path: ""
+                        content: 1 + 2 < 3 + 4 < 5 + 6
               op: Add
               span:
                 line_start: 1
                 line_stop: 1
                 col_start: 9
                 col_stop: 14
-                path: test
+                path: ""
                 content: 1 + 2 < 3 + 4 < 5 + 6
           op: Lt
           span:
@@ -296,7 +314,7 @@ outputs:
             line_stop: 1
             col_start: 1
             col_stop: 14
-            path: test
+            path: ""
             content: 1 + 2 < 3 + 4 < 5 + 6
       right:
         Binary:
@@ -304,29 +322,31 @@ outputs:
             Value:
               Implicit:
                 - "5"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 17
-                  col_stop: 18
-                  path: test
-                  content: 1 + 2 < 3 + 4 < 5 + 6
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 17
+                    col_stop: 18
+                    path: ""
+                    content: 1 + 2 < 3 + 4 < 5 + 6
           right:
             Value:
               Implicit:
                 - "6"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 21
-                  col_stop: 22
-                  path: test
-                  content: 1 + 2 < 3 + 4 < 5 + 6
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 21
+                    col_stop: 22
+                    path: ""
+                    content: 1 + 2 < 3 + 4 < 5 + 6
           op: Add
           span:
             line_start: 1
             line_stop: 1
             col_start: 17
             col_stop: 22
-            path: test
+            path: ""
             content: 1 + 2 < 3 + 4 < 5 + 6
       op: Lt
       span:
@@ -334,5 +354,5 @@ outputs:
         line_stop: 1
         col_start: 1
         col_stop: 22
-        path: test
+        path: ""
         content: 1 + 2 < 3 + 4 < 5 + 6

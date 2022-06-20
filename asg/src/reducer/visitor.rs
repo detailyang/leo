@@ -76,6 +76,10 @@ pub trait ExpressionVisitor<'a> {
         Default::default()
     }
 
+    fn visit_lengthof_expression(&mut self, input: &LengthOfExpression<'a>) -> VisitResult {
+        Default::default()
+    }
+
     fn visit_constant(&mut self, input: &Constant<'a>) -> VisitResult {
         Default::default()
     }
@@ -120,7 +124,7 @@ pub trait StatementVisitor<'a>: ExpressionVisitor<'a> {
         Default::default()
     }
 
-    fn visit_formatted_string(&mut self, input: &FormatString<'a>) -> VisitResult {
+    fn visit_formatted_string(&mut self, input: &ConsoleArgs<'a>) -> VisitResult {
         Default::default()
     }
 

@@ -395,7 +395,6 @@ keyword = %s"address"
         / %s"console"
         / %s"const"
         / %s"else"
-        / %s"false"
         / %s"field"
         / %s"for"
         / %s"function"
@@ -415,18 +414,14 @@ keyword = %s"address"
         / %s"Self"
         / %s"self"
         / %s"static"
-        / %s"string"
-        / %s"true"
+        / %s"type"
         / %s"u8"
         / %s"u16"
         / %s"u32"
         / %s"u64"
         / %s"u128"
 
-; The following rules define (ASCII)
-; digits and (uppercase and lowercase) letters.
-
-digit = %x30-39   ; 0-9
+; The following rules define (ASCII) letters.
 
 uppercase-letter = %x41-5A   ; A-Z
 
@@ -434,36 +429,47 @@ lowercase-letter = %x61-7A   ; a-z
 
 letter = uppercase-letter / lowercase-letter
 
-; The following rules defines (ASCII) octal and hexadecimal digits.
+; The following rules defines (ASCII) decimal, octal, and hexadecimal digits.
 ; Note that the latter are case-insensitive.
+
+decimal-digit = %x30-39   ; 0-9
 
 octal-digit = %x30-37   ; 0-7
 
-hexadecimal-digit = digit / "a" / "b" / "c" / "d" / "e" / "f"
+hexadecimal-digit = decimal-digit / "a" / "b" / "c" / "d" / "e" / "f"
 
-; An identifier is a non-empty sequence of letters, digits, and underscores,
+; An identifier is a non-empty sequence of
+; letters, (decimal) digits, and underscores,
 ; starting with a letter.
 ; It must not be a keyword: this is an extra-grammatical requirement.
 ; It must also not be or start with `aleo1`,
 ; because that is used for address literals:
 ; this is another extra-grammatical requirement.
 
-identifier = letter *( letter / digit / "_" )   ; but not a keyword or aleo1...
+identifier = letter *( letter / decimal-digit / "_" )
+             ; but not a keyword or a boolean literal or aleo1...
 
 ; A package name consists of one or more segments separated by single dashes,
-; where each segment is a non-empty sequence of lowercase letters and digits.
+; where each segment is a non-empty sequence of
+; lowercase letters and (decimal) digits.
+; Similarly to an identifier, a package name must not be a keyword
+; and must not be or start with `aleo1`.
 
-package-name = 1*( lowercase-letter / digit )
-               *( "-" 1*( lowercase-letter / digit ) )
+package-name = lowercase-letter *( lowercase-letter / decimal-digit )
+               *( "-" 1*( lowercase-letter / decimal-digit ) )
+               ; but not a keyword or a boolean literal or aleo1...
+
+; Note that, grammatically, identifiers are also package names.
+; They are disambiguated from context, based on the syntactic grammar.
 
 ; Annotations have names, which are identifiers immediately preceded by `@`.
 
 annotation-name = "@" identifier
 
-; A natural (number) is a sequence of one or more digits.
+; A natural (number) is a sequence of one or more decimal digits.
 ; We allow leading zeros, e.g. `007`.
 
-natural = 1*digit
+natural = 1*decimal-digit
 
 ; An integer (number) is either a natural or its negation.
 ; We allow leading zeros also in negative numbers, e.g. `-007`.
@@ -499,10 +505,10 @@ product-group-literal = integer %s"group"
 boolean-literal = %s"true" / %s"false"
 
 ; An address literal starts with `aleo1`
-; and continues with exactly 58 lowercase letters and digits.
+; and continues with exactly 58 lowercase letters and (decimal) digits.
 ; Thus an address always consists of 63 characters.
 
-address-literal = %s"aleo1" 58( lowercase-letter / digit )
+address-literal = %s"aleo1" 58( lowercase-letter / decimal-digit )
 
 ; A character literal consists of an element surrounded by single quotes.
 ; The element is any character other than single quote or backslash,
@@ -549,11 +555,8 @@ unicode-character-escape = %s"\u{" 1*6hexadecimal-digit "}"
 ; A string literal consists of one or more elements surrounded by double quotes.
 ; Each element is any character other than double quote or backslash,
 ; or an escape among the same ones used for elements of character literals.
-; There must be at least one element
-; because string literals denote character arrays,
-; and arrays must not be empty.
 
-string-literal = double-quote 1*string-literal-element double-quote
+string-literal = double-quote *string-literal-element double-quote
 
 string-literal-element = not-double-quote-or-backslash
                        / simple-character-escape
@@ -609,6 +612,10 @@ token = keyword
       / annotation-name
       / symbol
 
+; Tokens, comments, and whitespace are lexemes, i.e. lexical units.
+
+lexeme = token / comment / whitespace
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Syntactic Grammar
@@ -651,14 +658,6 @@ character-type = %s"char"
 
 scalar-type =  boolean-type / arithmetic-type / address-type / character-type
 
-; Circuit types are denoted by identifiers and the keyword `Self`.
-; The latter is only allowed inside a circuit definition,
-; to denote the circuit being defined.
-
-self-type = %s"Self"
-
-circuit-type = identifier / self-type
-
 ; A tuple type consists of zero, two, or more component types.
 
 tuple-type = "(" [ type 1*( "," type ) ] ")"
@@ -667,21 +666,37 @@ tuple-type = "(" [ type 1*( "," type ) ] ")"
 ; and an indication of dimensions.
 ; There is either a single dimension,
 ; or a tuple of one or more dimensions.
+; Each dimension is either a natural or is unspecified.
 
-array-type = "[" type ";" array-dimensions "]"
+array-type = "[" type ";" array-type-dimensions "]"
 
-array-dimensions = natural
-                 / "(" natural *( "," natural ) ")"
+array-type-dimension = natural / "_"
 
-; Circuit, tuple, and array types form the aggregate types,
-; i.e. types whose values contain (sub-)values
-; (with the corner-case exception of the empty tuple value).
+array-type-dimensions = array-type-dimension
+                      / "(" array-type-dimension
+                            *( "," array-type-dimension ) ")"
 
-aggregate-type = tuple-type / array-type / circuit-type
+; The keyword `Self` denotes the enclosing circuit type.
+; It is only allowed inside a circuit type declaration.
 
-; Scalar and aggregate types form all the types.
+self-type = %s"Self"
 
-type = scalar-type / aggregate-type
+; Circuit types are denoted by identifiers and by `Self`.
+; Identifiers may also be type aliases;
+; syntactically (i.e. without a semantic analysis),
+; they cannot be distinguished from circuit types.
+
+; Scalar types, tuple types, array types,
+; identifiers (which may be circuit types or type aliases),
+; and the `Self` type
+; form all the types.
+
+type = scalar-type / tuple-type / array-type / identifier / self-type
+
+; It is convenient to introduce a rule for types that are
+; either identifiers or `Self`, as this is used in other rules.
+
+identifier-or-self-type = identifier / self-type
 
 ; The lexical grammar given earlier defines product group literals.
 ; The other kind of group literal is a pair of integer coordinates,
@@ -752,7 +767,10 @@ array-inline-construction = "["
 
 array-inline-element = expression / "..." expression
 
-array-repeat-construction = "[" expression ";" array-dimensions "]"
+array-repeat-construction = "[" expression ";" array-expression-dimensions "]"
+
+array-expression-dimensions = natural
+                            / "(" natural *( "," natural ) ")"
 
 array-construction = array-inline-construction / array-repeat-construction
 
@@ -760,16 +778,16 @@ array-expression = array-construction
 
 ; Circuit expressions construct circuit values.
 ; Each lists values for all the member variables (in any order);
-; there must be at least one member variable.
+; there may be zero or more member variables.
 ; A single identifier abbreviates
 ; a pair consisting of the same identifier separated by colon;
 ; note that, in the expansion, the left one denotes a member name,
 ; while the right one denotes an expression (a variable),
 ; so they are syntactically identical but semantically different.
 
-circuit-construction = circuit-type "{"
-                       circuit-inline-element
-                       *( "," circuit-inline-element ) [ "," ]
+circuit-construction = identifier-or-self-type "{"
+                       [ circuit-inline-element
+                         *( "," circuit-inline-element ) [ "," ] ]
                        "}"
 
 circuit-inline-element = identifier ":" expression / identifier
@@ -803,7 +821,7 @@ postfix-expression = primary-expression
                    / postfix-expression "." identifier
                    / identifier function-arguments
                    / postfix-expression "." identifier function-arguments
-                   / circuit-type "::" identifier function-arguments
+                   / identifier-or-self-type "::" identifier function-arguments
                    / postfix-expression "[" expression "]"
                    / postfix-expression "[" [expression] ".." [expression] "]"
 
@@ -848,8 +866,8 @@ ordering-expression = additive-expression
 ; the rule below makes them left-associative.
 
 equality-expression = ordering-expression
-                    / equality-expression "==" ordering-expression
-                    / equality-expression "!=" ordering-expression
+                    / ordering-expression "==" ordering-expression
+                    / ordering-expression "!=" ordering-expression
 
 ; Next come conjunctive expressions, left-associative.
 
@@ -864,7 +882,7 @@ disjunctive-expression = conjunctive-expression
 ; Finally we have conditional expressions.
 
 conditional-expression = disjunctive-expression
-                       / conditional-expression
+                       / disjunctive-expression
                          "?" expression
                          ":" conditional-expression
 
@@ -933,7 +951,8 @@ conditional-statement = branch
 ; that goes from a starting value (inclusive) to an ending value (exclusive).
 ; The body is a block.
 
-loop-statement = %s"for" identifier %s"in" expression ".." expression block
+loop-statement = %s"for" identifier %s"in" expression ".." [ "=" ] expression
+                 block
 
 ; An assignment statement is straightforward.
 ; Based on the operator, the assignment may be simple (i.e. `=`)
@@ -953,7 +972,7 @@ assignment-statement = expression assignment-operator expression ";"
 ; Note that the console function names are identifiers, not keywords.
 ; There are three kinds of print commands.
 
-console-statement = %s"console" "." console-call
+console-statement = %s"console" "." console-call ";"
 
 console-call = assert-call
              / print-call
@@ -962,7 +981,7 @@ assert-call = %s"assert" "(" expression ")"
 
 print-function = %s"debug" / %s"error" / %s"log"
 
-print-arguments = "(" [ string-literal *( "," expression ) ] ")"
+print-arguments = "(" string-literal  *( "," expression ) ")"
 
 print-call = print-function print-arguments
 
@@ -1020,7 +1039,7 @@ member-function-declaration = function-declaration
 ; this may be relaxed after the backward compatibility is removed,
 ; allowing member variables and member functions to be intermixed.
 
-circuit-declaration = *annotation %s"circuit" identifier
+circuit-declaration = %s"circuit" identifier
                       "{" [ member-variable-declarations ]
                       *member-function-declaration "}"
 
@@ -1045,6 +1064,10 @@ package-path = "*"
              / package-name "." package-path
              / "(" package-path *( "," package-path ) [","] ")"
 
+; A type alias declaration defines an identifier to stand for a type.
+
+type-alias-declaration = %s"type" identifier "=" type ";"
+
 ; Finally, we define a file as a sequence of zero or more declarations.
 ; We allow constant declarations at the top level, for global constants.
 ; Currently variable declarations are disallowed at the top level.
@@ -1053,6 +1076,7 @@ declaration = import-declaration
             / function-declaration
             / circuit-declaration
             / constant-declaration
+            / type-alias-declaration
 
 file = *declaration
 

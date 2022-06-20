@@ -7,99 +7,106 @@ outputs:
         Value:
           Implicit:
             - "1"
-            - line_start: 1
-              line_stop: 1
-              col_start: 1
-              col_stop: 2
-              path: test
-              content: 1 ** 1
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 1
+                col_stop: 2
+                path: ""
+                content: 1 ** 1
       right:
         Value:
           Implicit:
             - "1"
-            - line_start: 1
-              line_stop: 1
-              col_start: 6
-              col_stop: 7
-              path: test
-              content: 1 ** 1
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 6
+                col_stop: 7
+                path: ""
+                content: 1 ** 1
       op: Pow
       span:
         line_start: 1
         line_stop: 1
         col_start: 1
         col_stop: 7
-        path: test
+        path: ""
         content: 1 ** 1
   - Binary:
       left:
         Value:
           Implicit:
             - "2"
-            - line_start: 1
-              line_stop: 1
-              col_start: 1
-              col_stop: 2
-              path: test
-              content: 2**3
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 1
+                col_stop: 2
+                path: ""
+                content: 2**3
       right:
         Value:
           Implicit:
             - "3"
-            - line_start: 1
-              line_stop: 1
-              col_start: 4
-              col_stop: 5
-              path: test
-              content: 2**3
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 4
+                col_stop: 5
+                path: ""
+                content: 2**3
       op: Pow
       span:
         line_start: 1
         line_stop: 1
         col_start: 1
         col_stop: 5
-        path: test
+        path: ""
         content: 2**3
   - Binary:
       left:
         Value:
           Implicit:
             - "1"
-            - line_start: 1
-              line_stop: 1
-              col_start: 1
-              col_stop: 2
-              path: test
-              content: 1 ** 2 ** 3
+            - span:
+                line_start: 1
+                line_stop: 1
+                col_start: 1
+                col_stop: 2
+                path: ""
+                content: 1 ** 2 ** 3
       right:
         Binary:
           left:
             Value:
               Implicit:
                 - "2"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 6
-                  col_stop: 7
-                  path: test
-                  content: 1 ** 2 ** 3
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 6
+                    col_stop: 7
+                    path: ""
+                    content: 1 ** 2 ** 3
           right:
             Value:
               Implicit:
                 - "3"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 11
-                  col_stop: 12
-                  path: test
-                  content: 1 ** 2 ** 3
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 11
+                    col_stop: 12
+                    path: ""
+                    content: 1 ** 2 ** 3
           op: Pow
           span:
             line_start: 1
             line_stop: 1
             col_start: 6
             col_stop: 12
-            path: test
+            path: ""
             content: 1 ** 2 ** 3
       op: Pow
       span:
@@ -107,7 +114,7 @@ outputs:
         line_stop: 1
         col_start: 1
         col_stop: 12
-        path: test
+        path: ""
         content: 1 ** 2 ** 3
   - Binary:
       left:
@@ -116,12 +123,13 @@ outputs:
             Value:
               Implicit:
                 - "1"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 1
-                  col_stop: 2
-                  path: test
-                  content: 1 as i8 ** 3 as i8
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 1
+                    col_stop: 2
+                    path: ""
+                    content: 1 as i8 ** 3 as i8
           target_type:
             IntegerType: I8
           span:
@@ -129,7 +137,7 @@ outputs:
             line_stop: 1
             col_start: 1
             col_stop: 8
-            path: test
+            path: ""
             content: 1 as i8 ** 3 as i8
       right:
         Cast:
@@ -137,12 +145,13 @@ outputs:
             Value:
               Implicit:
                 - "3"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 12
-                  col_stop: 13
-                  path: test
-                  content: 1 as i8 ** 3 as i8
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 12
+                    col_stop: 13
+                    path: ""
+                    content: 1 as i8 ** 3 as i8
           target_type:
             IntegerType: I8
           span:
@@ -150,7 +159,7 @@ outputs:
             line_stop: 1
             col_start: 12
             col_stop: 19
-            path: test
+            path: ""
             content: 1 as i8 ** 3 as i8
       op: Pow
       span:
@@ -158,7 +167,7 @@ outputs:
         line_stop: 1
         col_start: 1
         col_stop: 19
-        path: test
+        path: ""
         content: 1 as i8 ** 3 as i8
   - Binary:
       left:
@@ -167,12 +176,13 @@ outputs:
             Value:
               Implicit:
                 - "1"
-                - line_start: 1
-                  line_stop: 1
-                  col_start: 1
-                  col_stop: 2
-                  path: test
-                  content: 1 as i8 ** 3 as i8 ** 5 as i8
+                - span:
+                    line_start: 1
+                    line_stop: 1
+                    col_start: 1
+                    col_stop: 2
+                    path: ""
+                    content: 1 as i8 ** 3 as i8 ** 5 as i8
           target_type:
             IntegerType: I8
           span:
@@ -180,7 +190,7 @@ outputs:
             line_stop: 1
             col_start: 1
             col_stop: 8
-            path: test
+            path: ""
             content: 1 as i8 ** 3 as i8 ** 5 as i8
       right:
         Binary:
@@ -190,12 +200,13 @@ outputs:
                 Value:
                   Implicit:
                     - "3"
-                    - line_start: 1
-                      line_stop: 1
-                      col_start: 12
-                      col_stop: 13
-                      path: test
-                      content: 1 as i8 ** 3 as i8 ** 5 as i8
+                    - span:
+                        line_start: 1
+                        line_stop: 1
+                        col_start: 12
+                        col_stop: 13
+                        path: ""
+                        content: 1 as i8 ** 3 as i8 ** 5 as i8
               target_type:
                 IntegerType: I8
               span:
@@ -203,7 +214,7 @@ outputs:
                 line_stop: 1
                 col_start: 12
                 col_stop: 19
-                path: test
+                path: ""
                 content: 1 as i8 ** 3 as i8 ** 5 as i8
           right:
             Cast:
@@ -211,12 +222,13 @@ outputs:
                 Value:
                   Implicit:
                     - "5"
-                    - line_start: 1
-                      line_stop: 1
-                      col_start: 23
-                      col_stop: 24
-                      path: test
-                      content: 1 as i8 ** 3 as i8 ** 5 as i8
+                    - span:
+                        line_start: 1
+                        line_stop: 1
+                        col_start: 23
+                        col_stop: 24
+                        path: ""
+                        content: 1 as i8 ** 3 as i8 ** 5 as i8
               target_type:
                 IntegerType: I8
               span:
@@ -224,7 +236,7 @@ outputs:
                 line_stop: 1
                 col_start: 23
                 col_stop: 30
-                path: test
+                path: ""
                 content: 1 as i8 ** 3 as i8 ** 5 as i8
           op: Pow
           span:
@@ -232,7 +244,7 @@ outputs:
             line_stop: 1
             col_start: 12
             col_stop: 30
-            path: test
+            path: ""
             content: 1 as i8 ** 3 as i8 ** 5 as i8
       op: Pow
       span:
@@ -240,5 +252,5 @@ outputs:
         line_stop: 1
         col_start: 1
         col_stop: 30
-        path: test
+        path: ""
         content: 1 as i8 ** 3 as i8 ** 5 as i8
